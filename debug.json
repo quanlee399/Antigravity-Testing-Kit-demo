@@ -1,0 +1,854 @@
+{
+  "jmeterTestPlan": {
+    "$": {
+      "version": "1.2",
+      "properties": "5.0",
+      "jmeter": "5.5"
+    },
+    "hashTree": [
+      {
+        "TestPlan": [
+          {
+            "$": {
+              "guiclass": "TestPlanGui",
+              "testclass": "TestPlan",
+              "testname": "CRM Performance Test Suite",
+              "enabled": "true"
+            },
+            "stringProp": [
+              {
+                "$": {
+                  "name": "TestPlan.comments"
+                }
+              },
+              {
+                "$": {
+                  "name": "TestPlan.user_define_classpath"
+                }
+              }
+            ],
+            "boolProp": [
+              {
+                "_": "false",
+                "$": {
+                  "name": "TestPlan.functional_mode"
+                }
+              },
+              {
+                "_": "true",
+                "$": {
+                  "name": "TestPlan.tearDown_on_shutdown"
+                }
+              },
+              {
+                "_": "false",
+                "$": {
+                  "name": "TestPlan.serialize_threadgroups"
+                }
+              }
+            ],
+            "elementProp": [
+              {
+                "$": {
+                  "name": "TestPlan.user_defined_variables",
+                  "elementType": "Arguments",
+                  "guiclass": "ArgumentsPanel",
+                  "testclass": "Arguments",
+                  "testname": "User Defined Variables",
+                  "enabled": "true"
+                },
+                "collectionProp": [
+                  {
+                    "$": {
+                      "name": "Arguments.arguments"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "hashTree": [
+          {
+            "ThreadGroup": [
+              {
+                "$": {
+                  "guiclass": "ThreadGroupGui",
+                  "testclass": "ThreadGroup",
+                  "testname": "MCP Generated Users",
+                  "enabled": "true"
+                },
+                "stringProp": [
+                  {
+                    "$": {
+                      "name": "ThreadGroup.on_sample_error"
+                    },
+                    "_": "continue"
+                  },
+                  {
+                    "$": {
+                      "name": "ThreadGroup.num_threads"
+                    },
+                    "_": "10"
+                  },
+                  {
+                    "$": {
+                      "name": "ThreadGroup.ramp_time"
+                    },
+                    "_": "5"
+                  }
+                ],
+                "elementProp": [
+                  {
+                    "$": {
+                      "name": "ThreadGroup.main_controller",
+                      "elementType": "LoopController",
+                      "guiclass": "LoopControlPanel",
+                      "testclass": "LoopController",
+                      "testname": "Loop Controller",
+                      "enabled": "true"
+                    },
+                    "boolProp": [
+                      {
+                        "$": {
+                          "name": "LoopController.continue_forever"
+                        },
+                        "_": "false"
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "LoopController.loops"
+                        },
+                        "_": "3"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "hashTree": [
+              {
+                "CookieManager": [
+                  {
+                    "$": {
+                      "guiclass": "CookiePanel",
+                      "testclass": "CookieManager",
+                      "testname": "HTTP Cookie Manager",
+                      "enabled": "true"
+                    },
+                    "boolProp": [
+                      {
+                        "$": {
+                          "name": "CookieManager.clearEachIteration"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "CookieManager.controlledByThreadGroup"
+                        },
+                        "_": "false"
+                      }
+                    ]
+                  }
+                ],
+                "hashTree": [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ],
+                "HeaderManager": [
+                  {
+                    "$": {
+                      "guiclass": "HeaderPanel",
+                      "testclass": "HeaderManager",
+                      "testname": "HTTP Header Manager",
+                      "enabled": "true"
+                    },
+                    "collectionProp": [
+                      {
+                        "$": {
+                          "name": "HeaderManager.headers"
+                        },
+                        "elementProp": [
+                          {
+                            "$": {
+                              "name": "",
+                              "elementType": "Header"
+                            },
+                            "stringProp": [
+                              {
+                                "$": {
+                                  "name": "Header.name"
+                                },
+                                "_": "User-Agent"
+                              },
+                              {
+                                "$": {
+                                  "name": "Header.value"
+                                },
+                                "_": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                              }
+                            ]
+                          },
+                          {
+                            "$": {
+                              "name": "",
+                              "elementType": "Header"
+                            },
+                            "stringProp": [
+                              {
+                                "$": {
+                                  "name": "Header.name"
+                                },
+                                "_": "Accept"
+                              },
+                              {
+                                "$": {
+                                  "name": "Header.value"
+                                },
+                                "_": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                              }
+                            ]
+                          },
+                          {
+                            "$": {
+                              "name": "",
+                              "elementType": "Header"
+                            },
+                            "stringProp": [
+                              {
+                                "$": {
+                                  "name": "Header.name"
+                                },
+                                "_": "Accept-Language"
+                              },
+                              {
+                                "$": {
+                                  "name": "Header.value"
+                                },
+                                "_": "en-US,en;q=0.5"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "HTTPSamplerProxy": [
+                  {
+                    "$": {
+                      "guiclass": "HttpTestSampleGui",
+                      "testclass": "HTTPSamplerProxy",
+                      "testname": "HTTP Request to /admin/authentication",
+                      "enabled": "true"
+                    },
+                    "elementProp": [
+                      {
+                        "$": {
+                          "name": "HTTPsampler.Arguments",
+                          "elementType": "Arguments",
+                          "guiclass": "HTTPArgumentsPanel",
+                          "testclass": "Arguments",
+                          "testname": "User Defined Variables",
+                          "enabled": "true"
+                        },
+                        "collectionProp": [
+                          {
+                            "$": {
+                              "name": "Arguments.arguments"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "HTTPSampler.domain"
+                        },
+                        "_": "crm.anhtester.com"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.port"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.protocol"
+                        },
+                        "_": "https"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.contentEncoding"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.path"
+                        },
+                        "_": "/admin/authentication"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.method"
+                        },
+                        "_": "GET"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.follow_redirects"
+                        },
+                        "_": "true"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.auto_redirects"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.use_keepalive"
+                        },
+                        "_": "true"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.DO_MULTIPART_POST"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.embedded_url_re"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.connect_timeout"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.response_timeout"
+                        },
+                        "_": ""
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "guiclass": "HttpTestSampleGui",
+                      "testclass": "HTTPSamplerProxy",
+                      "testname": "HTTP Request to /admin/authentication",
+                      "enabled": "true"
+                    },
+                    "elementProp": [
+                      {
+                        "$": {
+                          "name": "HTTPsampler.Arguments",
+                          "elementType": "Arguments",
+                          "guiclass": "HTTPArgumentsPanel",
+                          "testclass": "Arguments",
+                          "testname": "User Defined Variables",
+                          "enabled": "true"
+                        },
+                        "collectionProp": [
+                          {
+                            "$": {
+                              "name": "Arguments.arguments"
+                            },
+                            "elementProp": [
+                              {
+                                "$": {
+                                  "name": "email",
+                                  "elementType": "HTTPArgument"
+                                },
+                                "boolProp": [
+                                  {
+                                    "$": {
+                                      "name": "HTTPArgument.always_encode"
+                                    },
+                                    "_": "false"
+                                  }
+                                ],
+                                "stringProp": [
+                                  {
+                                    "$": {
+                                      "name": "Argument.value"
+                                    },
+                                    "_": "admin@example.com"
+                                  },
+                                  {
+                                    "$": {
+                                      "name": "Argument.metadata"
+                                    },
+                                    "_": "="
+                                  },
+                                  {
+                                    "$": {
+                                      "name": "Argument.name"
+                                    },
+                                    "_": "email"
+                                  }
+                                ]
+                              },
+                              {
+                                "$": {
+                                  "name": "password",
+                                  "elementType": "HTTPArgument"
+                                },
+                                "boolProp": [
+                                  {
+                                    "$": {
+                                      "name": "HTTPArgument.always_encode"
+                                    },
+                                    "_": "false"
+                                  }
+                                ],
+                                "stringProp": [
+                                  {
+                                    "$": {
+                                      "name": "Argument.value"
+                                    },
+                                    "_": "123456"
+                                  },
+                                  {
+                                    "$": {
+                                      "name": "Argument.metadata"
+                                    },
+                                    "_": "="
+                                  },
+                                  {
+                                    "$": {
+                                      "name": "Argument.name"
+                                    },
+                                    "_": "password"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "HTTPSampler.domain"
+                        },
+                        "_": "crm.anhtester.com"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.port"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.protocol"
+                        },
+                        "_": "https"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.contentEncoding"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.path"
+                        },
+                        "_": "/admin/authentication"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.method"
+                        },
+                        "_": "POST"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.follow_redirects"
+                        },
+                        "_": "true"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.auto_redirects"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.use_keepalive"
+                        },
+                        "_": "true"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.DO_MULTIPART_POST"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.embedded_url_re"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.connect_timeout"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "HTTPSampler.response_timeout"
+                        },
+                        "_": ""
+                      }
+                    ]
+                  }
+                ],
+                "UniformRandomTimer": [
+                  {
+                    "$": {
+                      "guiclass": "UniformRandomTimerGui",
+                      "testclass": "UniformRandomTimer",
+                      "testname": "Uniform Random Timer",
+                      "enabled": "true"
+                    },
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "ConstantTimer.delay"
+                        },
+                        "_": "1000"
+                      },
+                      {
+                        "$": {
+                          "name": "RandomTimer.range"
+                        },
+                        "_": "500"
+                      }
+                    ]
+                  }
+                ],
+                "ResponseAssertion": [
+                  {
+                    "$": {
+                      "guiclass": "AssertionGui",
+                      "testclass": "ResponseAssertion",
+                      "testname": "Response Assertion",
+                      "enabled": "true"
+                    },
+                    "collectionProp": [
+                      {
+                        "$": {
+                          "name": "Asserion.test_strings"
+                        },
+                        "stringProp": [
+                          {
+                            "$": {
+                              "name": "0"
+                            },
+                            "_": "200|302|403"
+                          }
+                        ]
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "Assertion.custom_message"
+                        },
+                        "_": ""
+                      },
+                      {
+                        "$": {
+                          "name": "Assertion.test_field"
+                        },
+                        "_": "Assertion.response_code"
+                      },
+                      {
+                        "$": {
+                          "name": "Assertion.assume_success"
+                        },
+                        "_": "false"
+                      },
+                      {
+                        "$": {
+                          "name": "Assertion.test_type"
+                        },
+                        "_": "1"
+                      }
+                    ]
+                  }
+                ],
+                "ResultCollector": [
+                  {
+                    "$": {
+                      "guiclass": "SummaryReport",
+                      "testclass": "ResultCollector",
+                      "testname": "Summary Report",
+                      "enabled": "true"
+                    },
+                    "boolProp": [
+                      {
+                        "$": {
+                          "name": "ResultCollector.error_logging"
+                        },
+                        "_": "false"
+                      }
+                    ],
+                    "objProp": [
+                      {
+                        "$": {
+                          "name": "saveConfig"
+                        },
+                        "value": [
+                          {
+                            "$": {
+                              "class": "SampleSaveConfiguration"
+                            },
+                            "time": [
+                              "true"
+                            ],
+                            "latency": [
+                              "true"
+                            ],
+                            "timestamp": [
+                              "true"
+                            ],
+                            "success": [
+                              "true"
+                            ],
+                            "label": [
+                              "true"
+                            ],
+                            "code": [
+                              "true"
+                            ],
+                            "message": [
+                              "true"
+                            ],
+                            "threadName": [
+                              "true"
+                            ],
+                            "dataType": [
+                              "true"
+                            ],
+                            "encoding": [
+                              "false"
+                            ],
+                            "assertions": [
+                              "true"
+                            ],
+                            "subresults": [
+                              "true"
+                            ],
+                            "responseData": [
+                              "false"
+                            ],
+                            "samplerData": [
+                              "false"
+                            ],
+                            "xml": [
+                              "false"
+                            ],
+                            "fieldNames": [
+                              "true"
+                            ],
+                            "responseHeaders": [
+                              "false"
+                            ],
+                            "requestHeaders": [
+                              "false"
+                            ],
+                            "responseDataOnError": [
+                              "false"
+                            ],
+                            "saveAssertionResultsFailureMessage": [
+                              "true"
+                            ],
+                            "assertionsResultsToSave": [
+                              "0"
+                            ],
+                            "bytes": [
+                              "true"
+                            ],
+                            "sentBytes": [
+                              "true"
+                            ],
+                            "url": [
+                              "true"
+                            ],
+                            "threadCounts": [
+                              "true"
+                            ],
+                            "idleTime": [
+                              "true"
+                            ],
+                            "connectTime": [
+                              "true"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "filename"
+                        },
+                        "_": ""
+                      }
+                    ]
+                  },
+                  {
+                    "$": {
+                      "guiclass": "StatVisualizer",
+                      "testclass": "ResultCollector",
+                      "testname": "Aggregate Report",
+                      "enabled": "true"
+                    },
+                    "boolProp": [
+                      {
+                        "$": {
+                          "name": "ResultCollector.error_logging"
+                        },
+                        "_": "false"
+                      }
+                    ],
+                    "objProp": [
+                      {
+                        "$": {
+                          "name": "saveConfig"
+                        },
+                        "value": [
+                          {
+                            "$": {
+                              "class": "SampleSaveConfiguration"
+                            },
+                            "time": [
+                              "true"
+                            ],
+                            "latency": [
+                              "true"
+                            ],
+                            "timestamp": [
+                              "true"
+                            ],
+                            "success": [
+                              "true"
+                            ],
+                            "label": [
+                              "true"
+                            ],
+                            "code": [
+                              "true"
+                            ],
+                            "message": [
+                              "true"
+                            ],
+                            "threadName": [
+                              "true"
+                            ],
+                            "dataType": [
+                              "true"
+                            ],
+                            "encoding": [
+                              "false"
+                            ],
+                            "assertions": [
+                              "true"
+                            ],
+                            "subresults": [
+                              "true"
+                            ],
+                            "responseData": [
+                              "false"
+                            ],
+                            "samplerData": [
+                              "false"
+                            ],
+                            "xml": [
+                              "false"
+                            ],
+                            "fieldNames": [
+                              "true"
+                            ],
+                            "responseHeaders": [
+                              "false"
+                            ],
+                            "requestHeaders": [
+                              "false"
+                            ],
+                            "responseDataOnError": [
+                              "false"
+                            ],
+                            "saveAssertionResultsFailureMessage": [
+                              "true"
+                            ],
+                            "assertionsResultsToSave": [
+                              "0"
+                            ],
+                            "bytes": [
+                              "true"
+                            ],
+                            "sentBytes": [
+                              "true"
+                            ],
+                            "url": [
+                              "true"
+                            ],
+                            "threadCounts": [
+                              "true"
+                            ],
+                            "idleTime": [
+                              "true"
+                            ],
+                            "connectTime": [
+                              "true"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "stringProp": [
+                      {
+                        "$": {
+                          "name": "filename"
+                        },
+                        "_": ""
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

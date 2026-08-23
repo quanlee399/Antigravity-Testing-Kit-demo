@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "jmeter-architect": {
+      "command": "node",
+      "args": [
+        "e:\\Kun\\Antigravity Demo\\Antigravity Testing kit demo\\tools\\jmeter-mcp\\dist\\index.js"
+      ],
+      "env": {
+        "JMETER_HOME": "e:\\Kun\\Antigravity Demo\\Antigravity Testing kit demo\\tools\\apache-jmeter-5.6.3",
+        "JMETER_BIN": "e:\\Kun\\Antigravity Demo\\Antigravity Testing kit demo\\tools\\apache-jmeter-5.6.3\\bin\\jmeter.bat",
+        "PATH": "e:\\Kun\\Antigravity Demo\\Antigravity Testing kit demo\\tools\\apache-jmeter-5.6.3\\bin;%PATH%"
+      }
+    }
+  }
+}
