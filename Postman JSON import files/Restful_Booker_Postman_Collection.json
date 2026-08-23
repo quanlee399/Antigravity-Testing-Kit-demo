@@ -1,0 +1,1081 @@
+{
+	"info": {
+		"_postman_id": "r1f7e3b8-2a91-4e78-bc91-restful-booker-full-collection",
+		"name": "Restful-Booker API Test Suite (Full 30 TCs)",
+		"description": "Complete Postman Collection for all 30 Test Cases covering Auth, Dynamic Token, Booking CRUD, Boundary Validation, and Ping endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://restful-booker.herokuapp.com",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bookingId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth & Dynamic Token",
+			"item": [
+				{
+					"name": "TC_AUTH_001: [Happy Path] Create Dynamic Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response returns dynamic token string', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_002: [Auth Failure] Create Token with invalid username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Returns Bad credentials reason', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reason).to.eql('Bad credentials');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"invalid_admin\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_003: [Auth Failure] Create Token with invalid password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Returns Bad credentials reason', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reason).to.eql('Bad credentials');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrong_password\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_004: [Validation] Create Token missing password field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Returns Bad credentials reason', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reason).to.eql('Bad credentials');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_005: [Validation] Create Token with empty body payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Returns Bad credentials reason', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.reason).to.eql('Bad credentials');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": { "raw": "{{baseUrl}}/auth", "host": ["{{baseUrl}}"], "path": ["auth"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_006: [Dynamic Token Flow] Update booking using dynamic token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Booking updated using dynamic token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.firstname).to.eql('DynamicJim');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Cookie", "value": "token={{token}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"DynamicJim\",\n  \"lastname\": \"Brown\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_007: [Auth Bypass] DELETE without Auth Header/Cookie",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 403 Forbidden', function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_008: [Auth Failure] DELETE with invalid Cookie token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 403 Forbidden', function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Cookie", "value": "token=invalid_token_xyz" }
+						],
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_AUTH_009: [Alternative Auth] DELETE using Basic Auth header",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201 Created', function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Basic YWRtaW46cGFzc3dvcmQxMjM=" }
+						],
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Booking CRUD & Boundary Validation",
+			"item": [
+				{
+					"name": "TC_BOOKING_001: [Happy Path] Create a new booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response returns created bookingid and booking object', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('bookingid');",
+									"    pm.expect(jsonData.booking.firstname).to.eql('Jim');",
+									"    pm.collectionVariables.set('bookingId', jsonData.bookingid);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"Brown\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_002: [Boundary] Create booking with totalprice = 0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('totalprice is 0', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.booking.totalprice).to.eql(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"Zero\",\n  \"totalprice\": 0,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_003: [Boundary] Create booking with negative totalprice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 400', function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"Negative\",\n  \"totalprice\": -100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_004: [Boundary] Create booking with large totalprice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('totalprice is 9999999', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.booking.totalprice).to.eql(9999999);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"Large\",\n  \"totalprice\": 9999999,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_005: [Boundary] Create booking with depositpaid = false",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('depositpaid is false', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.booking.depositpaid).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"NoDeposit\",\n  \"totalprice\": 100,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_006: [Boundary Date] Create booking with checkin == checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"SameDay\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-01\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_007: [Boundary Date] Create booking with checkin after checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 400', function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"WrongDate\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-10\",\n    \"checkout\": \"2026-09-01\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_008: [Validation] Create booking missing required firstname",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 500 or 400', function () {",
+									"    pm.expect([400, 500]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"NoFirstname\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_009: [Validation] Create booking missing bookingdates object",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 500 or 400', function () {",
+									"    pm.expect([400, 500]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Jim\",\n  \"lastname\": \"NoDates\",\n  \"totalprice\": 100,\n  \"depositpaid\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_010: [Security/XSS] Create booking with XSS script in firstname",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('firstname retains or sanitizes XSS script', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.booking.firstname).to.eql(\"<script>alert('XSS')</script>\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"<script>alert('XSS')</script>\",\n  \"lastname\": \"XSS\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  }\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_011: [Happy Path] Get all booking IDs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array of booking IDs', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/booking", "host": ["{{baseUrl}}"], "path": ["booking"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_012: [Filtering] Filter booking IDs by firstname and lastname",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/booking?firstname=Jim&lastname=Brown",
+							"host": ["{{baseUrl}}"],
+							"path": ["booking"],
+							"query": [
+								{ "key": "firstname", "value": "Jim" },
+								{ "key": "lastname", "value": "Brown" }
+							]
+						}
+					}
+				},
+				{
+					"name": "TC_BOOKING_013: [Filtering] Filter booking IDs by checkin and checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/booking?checkin=2026-01-01&checkout=2026-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["booking"],
+							"query": [
+								{ "key": "checkin", "value": "2026-01-01" },
+								{ "key": "checkout", "value": "2026-12-31" }
+							]
+						}
+					}
+				},
+				{
+					"name": "TC_BOOKING_014: [Happy Path] Get booking by valid ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Returns booking details', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('firstname');",
+									"    pm.expect(jsonData).to.have.property('lastname');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_015: [Negative] Get booking by non-existent ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/booking/999999999", "host": ["{{baseUrl}}"], "path": ["booking", "999999999"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_016: [Negative] Get booking by invalid string ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 or 400', function () {",
+									"    pm.expect([404, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/booking/invalid_string_id", "host": ["{{baseUrl}}"], "path": ["booking", "invalid_string_id"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_017: [Happy Path] PUT Update Booking with Dynamic Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Booking updated correctly', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.firstname).to.eql('UpdatedJim');",
+									"    pm.expect(jsonData.lastname).to.eql('UpdatedBrown');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Cookie", "value": "token={{token}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"UpdatedJim\",\n  \"lastname\": \"UpdatedBrown\",\n  \"totalprice\": 222,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-01\",\n    \"checkout\": \"2026-09-10\"\n  },\n  \"additionalneeds\": \"Lunch\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_018: [Happy Path] PATCH Partial Update Booking with Dynamic Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Firstname patched successfully', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.firstname).to.eql('PatchedJim');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Cookie", "value": "token={{token}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"PatchedJim\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_019: [Happy Path] DELETE Booking with Dynamic Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.sendRequest({",
+									"    url: pm.collectionVariables.get('baseUrl') + '/booking',",
+									"    method: 'POST',",
+									"    header: { 'Content-Type': 'application/json' },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            firstname: 'Jim',",
+									"            lastname: 'Brown',",
+									"            totalprice: 111,",
+									"            depositpaid: true,",
+									"            bookingdates: { checkin: '2026-09-01', checkout: '2026-09-10' }",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"        var created = res.json();",
+									"        pm.collectionVariables.set('bookingId', created.bookingid);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201 Created', function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Cookie", "value": "token={{token}}" }
+						],
+						"url": { "raw": "{{baseUrl}}/booking/{{bookingId}}", "host": ["{{baseUrl}}"], "path": ["booking", "{{bookingId}}"] }
+					}
+				},
+				{
+					"name": "TC_BOOKING_020: [Negative] DELETE non-existent booking ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 405 or 404', function () {",
+									"    pm.expect([405, 404]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Cookie", "value": "token={{token}}" }
+						],
+						"url": { "raw": "{{baseUrl}}/booking/999999999", "host": ["{{baseUrl}}"], "path": ["booking", "999999999"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Ping / Health Check",
+			"item": [
+				{
+					"name": "TC_PING_001: [Happy Path] Ping Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201 Created', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Body is Created text', function () {",
+									"    pm.expect(pm.response.text()).to.eql('Created');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/ping", "host": ["{{baseUrl}}"], "path": ["ping"] }
+					}
+				}
+			]
+		}
+	]
+}

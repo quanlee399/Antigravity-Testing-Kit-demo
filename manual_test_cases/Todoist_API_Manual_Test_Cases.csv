@@ -1,0 +1,93 @@
+Test Case ID,Module,Endpoint,HTTP Method,Test Title,Test Type,Priority,Pre-conditions,Headers / Auth,Request Body / Params,Test Steps,Expected Status Code,Expected Response / Behavior
+TC_TODOIST_USER_001,User,/api/v1/user,GET,Get current user profile,Happy Path,P1,Todoist account active.,Authorization: Bearer <valid_token>,None,"1. Send GET /api/v1/user.
+2. Verify HTTP status code.",200 OK / 401,"Returns user id, email, full_name."
+TC_TODOIST_USER_002,User,/api/v1/user,GET,Get user profile missing Bearer token,Negative,P1,None.,None,None,"1. Send GET /api/v1/user without auth token.
+2. Verify status code.",401 Unauthorized,Returns HTTP 401 Unauthorized.
+TC_TODOIST_USER_003,User,/api/v1/user,GET,Get user profile with invalid Bearer token,Negative,P1,None.,Authorization: Bearer invalid_token_123,None,"1. Send GET /api/v1/user with invalid token.
+2. Verify status code.",401 Unauthorized,Returns HTTP 401 Unauthorized.
+TC_TODOIST_PROJ_001,Projects,/api/v1/projects,GET,List all user projects,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,None,"1. Send GET /api/v1/projects.
+2. Check project list.",200 OK / 401,Returns array of project objects.
+TC_TODOIST_PROJ_002,Projects,/api/v1/projects,POST,Create new project with valid name,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"{""name"": ""Auto_Project_1""}","1. Send POST /api/v1/projects.
+2. Verify project created.",200 OK / 201 / 401,Returns project object with name and id.
+TC_TODOIST_PROJ_003,Projects,/api/v1/projects,POST,Create project missing required name field,Validation,P2,Bearer token valid.,Authorization: Bearer <valid_token>,{},"1. Send POST /api/v1/projects missing name.
+2. Check status code.",400 Bad Request / 401,Returns HTTP 400 Bad Request.
+TC_TODOIST_PROJ_004,Projects,/api/v1/projects/{id},GET,Get project by valid ID,Happy Path,P1,Project ID exists.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send GET /api/v1/projects/{id}.
+2. Check project details.",200 OK / 401,Returns single project object.
+TC_TODOIST_PROJ_005,Projects,/api/v1/projects/{id},GET,Get project by non-existent ID,Negative,P2,Project ID does not exist.,Authorization: Bearer <valid_token>,Path Param: id=99999999,"1. Send GET with fake ID.
+2. Check status code.",404 Not Found / 401,Returns HTTP 404 Not Found.
+TC_TODOIST_PROJ_006,Projects,/api/v1/projects/{id},POST,Update project name,Happy Path,P1,Project ID exists.,Authorization: Bearer <valid_token>,"{""name"": ""Updated_Project_Name""}",1. Send POST /api/v1/projects/{id} to update name.,200 OK / 401,Returns updated project object.
+TC_TODOIST_PROJ_007,Projects,/api/v1/projects/{id}/archive,POST,Archive project,Happy Path,P2,Project ID active.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send POST to archive project.
+2. Check status code.",204 / 200 / 401,Project is archived.
+TC_TODOIST_PROJ_008,Projects,/api/v1/projects/{id}/unarchive,POST,Unarchive project,Happy Path,P2,Project ID archived.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send POST to unarchive project.
+2. Check status code.",204 / 200 / 401,Project is unarchived.
+TC_TODOIST_PROJ_009,Projects,/api/v1/projects/{id},DELETE,Delete project by ID,Happy Path,P1,Project ID exists.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send DELETE /api/v1/projects/{id}.
+2. Check status code.",204 / 200 / 401,Project deleted.
+TC_TODOIST_TASK_001,Tasks,/api/v1/tasks,GET,List all active tasks,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,None,"1. Send GET /api/v1/tasks.
+2. Check tasks list.",200 OK / 401,Returns array of task objects.
+TC_TODOIST_TASK_002,Tasks,/api/v1/tasks,POST,Create task with valid content,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"{""content"": ""Buy milk"", ""due_string"": ""tomorrow""}","1. Send POST /api/v1/tasks.
+2. Check task created.",200 OK / 201 / 401,Returns created task object.
+TC_TODOIST_TASK_003,Tasks,/api/v1/tasks,POST,Create task missing required content,Validation,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"{""due_string"": ""tomorrow""}","1. Send POST missing content.
+2. Check status code.",400 Bad Request / 401,Returns HTTP 400 Bad Request.
+TC_TODOIST_TASK_004,Tasks,/api/v1/tasks,POST,Create task with XSS script in content,Security,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"{""content"": ""<script>alert(1)</script>""}","1. Send POST with XSS payload.
+2. Check content stored safely.",200 OK / 201 / 401,Retains string without code execution.
+TC_TODOIST_TASK_005,Tasks,/api/v1/tasks/{id},GET,Get task details by valid ID,Happy Path,P1,Task ID exists.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send GET /api/v1/tasks/{id}.
+2. Check task details.",200 OK / 401,Returns single task object.
+TC_TODOIST_TASK_006,Tasks,/api/v1/tasks/{id},GET,Get task details by non-existent ID,Negative,P2,Task ID does not exist.,Authorization: Bearer <valid_token>,Path Param: id=99999999,"1. Send GET with fake ID.
+2. Check status code.",404 Not Found / 401,Returns HTTP 404 Not Found.
+TC_TODOIST_TASK_007,Tasks,/api/v1/tasks/{id},POST,Update task content and priority,Happy Path,P1,Task ID exists.,Authorization: Bearer <valid_token>,"{""content"": ""Buy organic milk"", ""priority"": 4}","1. Send POST to update task.
+2. Check updated fields.",200 OK / 401,Returns updated task object.
+TC_TODOIST_TASK_008,Tasks,/api/v1/tasks/{id}/close,POST,Close / Complete task,Happy Path,P1,Task active.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send POST to close task.
+2. Check status code.",204 / 200 / 401,Task completed.
+TC_TODOIST_TASK_009,Tasks,/api/v1/tasks/{id}/reopen,POST,Reopen completed task,Happy Path,P1,Task completed.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send POST to reopen task.
+2. Check status code.",204 / 200 / 401,Task reopened.
+TC_TODOIST_TASK_010,Tasks,/api/v1/tasks/{id},DELETE,Delete task by ID,Happy Path,P1,Task ID exists.,Authorization: Bearer <valid_token>,Path Param: id,"1. Send DELETE /api/v1/tasks/{id}.
+2. Check status code.",204 / 200 / 401,Task deleted.
+TC_IDMAP_200_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for valid tasks object with valid Base32 ID,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET /api/v1/id_mappings/tasks/6vfwjjjfg2xqx6pa.
+2. Check HTTP status code.
+3. Check response body structure.",200 OK,Returns Array of IdMapping objects with old_id and new_id. Response time < 2s.
+TC_IDMAP_200_002,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for projects object with valid Base32 ID,Data Provider,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=projects, obj_ids=2345672345","1. Send GET /api/v1/id_mappings/projects/2345672345.
+2. Verify status code and body.",200 OK,Returns Array of IdMapping objects for projects.
+TC_IDMAP_200_003,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for sections object with valid Base32 ID,Data Provider,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=sections, obj_ids=7025252525","1. Send GET /api/v1/id_mappings/sections/7025252525.
+2. Verify status code and body.",200 OK,Returns Array of IdMapping objects for sections.
+TC_IDMAP_200_004,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for comments object with valid Base32 ID,Data Provider,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=comments, obj_ids=3001292929","1. Send GET /api/v1/id_mappings/comments/3001292929.
+2. Verify status code and body.",200 OK,Returns Array of IdMapping objects for comments.
+TC_IDMAP_200_005,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for reminders object with valid Base32 ID,Data Provider,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=reminders, obj_ids=4009191919","1. Send GET /api/v1/id_mappings/reminders/4009191919.
+2. Verify status code and body.",200 OK,Returns Array of IdMapping objects for reminders.
+TC_IDMAP_200_006,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for location_reminders object with valid Base32 ID,Data Provider,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=location_reminders, obj_ids=5001212121","1. Send GET /api/v1/id_mappings/location_reminders/5001212121.
+2. Verify status code and body.",200 OK,Returns Array of IdMapping objects for location_reminders.
+TC_IDMAP_200_007,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings for multiple valid Base32 comma-separated IDs,Happy Path,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa,6wmvpf2hn2jp6mc2","1. Send GET with comma-separated Base32 IDs.
+2. Verify all mapped IDs returned.",200 OK,Returns Array containing mappings for each matched Base32 ID.
+TC_IDMAP_200_008,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Non-existent valid Base32 ID returns empty array,Boundary,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=nonexistentbase32id","1. Send GET with non-existent Base32 ID.
+2. Check response body.",200 OK,Returns empty Array [].
+TC_IDMAP_400_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with invalid obj_name enum,Negative,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=invalid_enum, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with invalid obj_name string.
+2. Check status code.",400 Bad Request,Returns HTTP 400 Bad Request with error message.
+TC_IDMAP_400_002,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with unsupported object type users,Negative,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=users, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with obj_name=users.
+2. Check status code.",400 Bad Request,Returns HTTP 400 Bad Request indicating unsupported type.
+TC_IDMAP_400_003,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Non-Base32 digits in obj_ids (digits 0 1 8 9 or uppercase letters),Validation,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=6VfWjjjFg2xqX6Pa,6WMVPf8Hn8JP6mC8,918273645","1. Send GET with Non-Base32 digits in obj_ids.
+2. Check error response.",400 Bad Request,Returns HTTP 400 Bad Request with error_tag INVALID_ARGUMENT_VALUE and message Non-base32 digit found.
+TC_IDMAP_400_004,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with numeric string obj_name 12345,Negative,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=12345, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with numeric obj_name.
+2. Check status code.",400 Bad Request,Returns HTTP 400 Bad Request.
+TC_IDMAP_400_005,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with empty spaces in obj_ids,Boundary,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=   ","1. Send GET with space obj_ids.
+2. Check status code.",400 Bad Request / 404,Returns HTTP 400 Bad Request or 404 Not Found.
+TC_IDMAP_401_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings missing Authorization header,Security,P1,None.,None,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET without Auth header.
+2. Check status code.",401 Unauthorized,Returns HTTP 401 Unauthorized.
+TC_IDMAP_401_002,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with invalid Bearer token,Security,P1,None.,Authorization: Bearer invalid_token_xyz,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with fake token.
+2. Check status code.",401 Unauthorized,Returns HTTP 401 Unauthorized.
+TC_IDMAP_401_003,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with malformed auth header,Security,P2,None.,Authorization: RawTokenValue,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with malformed header.
+2. Check status code.",401 Unauthorized,Returns HTTP 401 Unauthorized.
+TC_IDMAP_403_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with revoked/restricted scope token,Security,P2,Restricted token.,Authorization: Bearer restricted_token,"Path Params: obj_name=tasks, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with restricted token.
+2. Check status code.",403 Forbidden / 401,Returns HTTP 403 Forbidden or 401.
+TC_IDMAP_404_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings with invalid API route path,Route,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Route: /api/v1/invalid_route/tasks/6vfwjjjfg2xqx6pa","1. Send GET to invalid path.
+2. Check status code.",404 Not Found,Returns HTTP 404 Not Found.
+TC_IDMAP_404_002,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Get ID mappings missing obj_ids path param,Route,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Route: /api/v1/id_mappings/tasks","1. Send GET missing obj_ids param.
+2. Check status code.",404 Not Found / 400,Returns HTTP 404 Not Found or 400.
+TC_IDMAP_SEC_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,SQL Injection payload in obj_name,Security,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=' OR '1'='1, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with SQLi in obj_name.
+2. Verify safe rejection.",400 Bad Request / 404,Safely rejected with 400/404. No 500 error.
+TC_IDMAP_SEC_002,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,SQL Injection payload in obj_ids,Security,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids='; DROP TABLE id_mappings;--","1. Send GET with SQLi in obj_ids.
+2. Verify safe response.",200 OK / 400 / 404,Safely handled (returns 200 empty array [] or 400/404). No SQL execution.
+TC_IDMAP_SEC_003,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,XSS payload in obj_name and obj_ids,Security,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=<script>alert(1)</script>, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with XSS script payload.
+2. Verify safe response.",400 Bad Request / 404,Input sanitized or rejected. No script execution.
+TC_IDMAP_SEC_004,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Path Traversal payload in obj_name,Security,P1,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=../../etc/passwd, obj_ids=6vfwjjjfg2xqx6pa","1. Send GET with path traversal payload.
+2. Verify safe response.",400 Bad Request / 404,Blocked safely. No file system leakage.
+TC_IDMAP_500_001,ID Mappings,/api/v1/id_mappings/{obj_name}/{obj_ids},GET,Heavy payload with 500 comma-separated Base32 IDs,Stress,P2,Bearer token valid.,Authorization: Bearer <valid_token>,"Path Params: obj_name=tasks, obj_ids=500 concatenated Base32 IDs","1. Send GET with 500 comma-separated Base32 IDs.
+2. Check server robustness.",200 OK / 400,Server handles request safely. Status is NOT 500.

@@ -1,0 +1,73 @@
+﻿Test Case ID,Module,Endpoint,HTTP Method,Test Title,Test Type,Priority,Pre-conditions,Headers / Auth,Request Body / Params,Test Steps,Expected Status Code,Expected Response / Behavior
+TC_PET_001,Pet,/pet,POST,Create a new pet with valid payload,Happy Path,P1,API service is running.,Content-Type: application/json; api_key: special-key,"{""id"": 123456, ""category"": {""id"": 1, ""name"": ""Dogs""}, ""name"": ""auto_pet_dog"", ""photoUrls"": [""https://example.com/pet.jpg""], ""tags"": [{""id"": 1, ""name"": ""friendly""}], ""status"": ""available""}","1. Send POST request to /pet with valid JSON payload.
+2. Verify HTTP status code.
+3. Verify response body fields match sent data.",200 OK,"Response contains pet object with code 200, matching id, name, and status 'available'."
+TC_PET_002,Pet,/pet,POST,Add pet missing required name field,Validation,P2,API service is running.,Content-Type: application/json; api_key: special-key,"{""id"": 123457, ""photoUrls"": [""https://example.com/pet.jpg""]}","1. Send POST request to /pet without 'name' field.
+2. Verify response status code.",200 / 400 / 405,Server rejects with HTTP 400/405 validation error or accepts with default values (200 OK).
+TC_PET_003,Pet,/pet,POST,Add pet with invalid enum status,Validation,P2,API service is running.,Content-Type: application/json; api_key: special-key,"{""id"": 123458, ""name"": ""invalid_enum_pet"", ""photoUrls"": [""https://example.com/pet.jpg""], ""status"": ""INVALID_STATUS_ENUM""}","1. Send POST request to /pet with invalid status enum value.
+2. Verify status code response.",200 / 400 / 405,Server returns validation error 400/405 or handles graceful status assignment.
+TC_PET_004,Pet,/pet,POST,Add pet with XSS payload in pet name,Security,P2,API service is running.,Content-Type: application/json; api_key: special-key,"{""id"": 123459, ""name"": ""<script>alert('XSS')</script>"", ""photoUrls"": [""https://example.com/pet.jpg""], ""status"": ""available""}","1. Send POST request with HTML/JS script tag in 'name'.
+2. Verify response handles script safely.",200 OK,Response retains sanitized text string without executing XSS payload.
+TC_PET_005,Pet,/pet,PUT,Update an existing pet via PUT,Happy Path,P1,Pet with specified ID exists on server.,Content-Type: application/json; api_key: special-key,"{""id"": 123456, ""name"": ""doggie_updated"", ""photoUrls"": [""https://example.com/pet.jpg""], ""status"": ""sold""}","1. Send PUT request to /pet with updated name and status 'sold'.
+2. Verify response status code and updated fields.",200 OK,Response contains updated pet object with name 'doggie_updated' and status 'sold'.
+TC_PET_006,Pet,/pet/findByStatus,GET,Find pets by status = available,Happy Path,P1,Pets exist in database with various statuses.,api_key: special-key,Query Param: status=available,"1. Send GET request to /pet/findByStatus?status=available.
+2. Check HTTP status code.
+3. Verify response is an array of pets.",200 OK,Response body returns a JSON array of pets with status 'available'.
+TC_PET_007,Pet,/pet/findByTags,GET,Find pets by tags (deprecated endpoint),Boundary,P3,Pets exist in database with tags.,api_key: special-key,"Query Param: tags=tag1,tag2","1. Send GET request to /pet/findByTags?tags=tag1,tag2.
+2. Check status code and array response.",200 OK,Response body returns a JSON array of pets matching requested tags.
+TC_PET_008,Pet,/pet/{petId},GET,Get pet by valid ID,Happy Path,P1,Pet ID 123456 exists on server.,api_key: special-key,Path Param: petId=123456,"1. Send GET request to /pet/123456.
+2. Verify HTTP status code.
+3. Check returned pet ID matches requested ID.",200 OK / 404,Response body contains complete pet object matching ID 123456.
+TC_PET_009,Pet,/pet/{petId},GET,Get pet by non-existent ID,Negative,P2,Pet ID 99999999999 does not exist.,api_key: special-key,Path Param: petId=99999999999,"1. Send GET request to /pet/99999999999.
+2. Verify response status code.",404 Not Found,Server returns HTTP 404 error with error message 'Pet not found'.
+TC_PET_010,Pet,/pet/{petId},GET,Get pet by invalid string ID,Negative,P2,API service is running.,api_key: special-key,Path Param: petId=invalid_string_id,"1. Send GET request with non-numeric string ID.
+2. Check HTTP status code.",400 / 404,Server returns HTTP 400 Bad Request or 404 Not Found.
+TC_PET_011,Pet,/pet/{petId},POST,Update pet with form data,Happy Path,P2,Target pet ID exists on server.,Content-Type: application/x-www-form-urlencoded; api_key: special-key,Form Data: name=updated_form_pet&status=pending,"1. Send POST request to /pet/{petId} with form URL-encoded data.
+2. Verify HTTP status code.",200 OK,Server returns HTTP 200 OK confirming pet form update.
+TC_PET_012,Pet,/pet/{petId}/uploadImage,POST,Upload image for pet,Happy Path,P2,Target pet ID exists on server.,api_key: special-key; Content-Type: multipart/form-data,"Multipart Data: additionalMetadata='test image', file=[binary jpg file]","1. Send POST request with multipart file attachment.
+2. Verify response status and message.",200 OK,Response code 200 with message confirming file upload.
+TC_PET_013,Pet,/pet/{petId},DELETE,Delete pet by ID,Happy Path,P1,Pet ID exists on server.,api_key: special-key,Path Param: petId=123456,"1. Send DELETE request to /pet/123456.
+2. Verify response status code.",200 OK,Server returns HTTP 200 OK confirming deletion.
+TC_PET_014,Pet,/pet/{petId},DELETE,Delete non-existent pet,Negative,P2,Pet ID 99999999999 does not exist.,api_key: special-key,Path Param: petId=99999999999,"1. Send DELETE request to non-existent ID.
+2. Verify response status code.",404 Not Found,Server returns HTTP 404 Not Found.
+TC_STORE_001,Store,/store/inventory,GET,Get pet inventories by status,Happy Path,P1,API service is running.,api_key: special-key,None,"1. Send GET request to /store/inventory.
+2. Verify HTTP status code and response structure.",200 OK,"Returns a JSON object map containing inventory counts by status (e.g. {'available': 100, 'pending': 5})."
+TC_STORE_002,Store,/store/order,POST,Place an order for a pet,Happy Path,P1,Pet ID exists in database.,Content-Type: application/json; api_key: special-key,"{""id"": 100001, ""petId"": 123456, ""quantity"": 1, ""shipDate"": ""2026-08-15T14:45:00.000Z"", ""status"": ""placed"", ""complete"": true}","1. Send POST request to /store/order with valid JSON order payload.
+2. Verify HTTP status code.
+3. Check order properties in response.",200 OK,"Returns order object with status 'placed', complete=true, matching order ID and petId."
+TC_STORE_003,Store,/store/order,POST,Place order with negative quantity,Validation,P2,API service is running.,Content-Type: application/json; api_key: special-key,"{""id"": 100002, ""petId"": 123456, ""quantity"": -5, ""status"": ""placed""}","1. Send POST request to /store/order with quantity = -5.
+2. Check status code response.",200 / 400,Server returns 400 Bad Request validation error or handles default payload behavior.
+TC_STORE_004,Store,/store/order/{orderId},GET,Find purchase order by ID (between 1 and 10),Happy Path,P2,Order ID 1 exists on server.,api_key: special-key,Path Param: orderId=1,"1. Send GET request to /store/order/1.
+2. Check status code and response body.",200 OK / 404,Returns order details for order ID 1.
+TC_STORE_005,Store,/store/order/{orderId},GET,Find purchase order by non-existent ID,Negative,P2,Order ID 999999999 does not exist.,api_key: special-key,Path Param: orderId=999999999,"1. Send GET request to /store/order/999999999.
+2. Verify HTTP status code.",404 Not Found,Server returns HTTP 404 Order Not Found.
+TC_STORE_006,Store,/store/order/{orderId},GET,Find order by invalid string ID,Negative,P2,API service is running.,api_key: special-key,Path Param: orderId=invalid_str_id,"1. Send GET request with string ID.
+2. Check HTTP status code.",400 / 404,Server returns HTTP 400 Bad Request or 404 Not Found.
+TC_STORE_007,Store,/store/order/{orderId},DELETE,Delete purchase order by ID,Happy Path,P1,Order ID exists on server.,api_key: special-key,Path Param: orderId=100001,"1. Send DELETE request to /store/order/100001.
+2. Verify HTTP status code.",200 OK / 404,Server returns HTTP 200 OK confirming order deletion.
+TC_STORE_008,Store,/store/order/{orderId},DELETE,Delete non-existent purchase order,Negative,P2,Order ID 999999999 does not exist.,api_key: special-key,Path Param: orderId=999999999,"1. Send DELETE request to non-existent order ID.
+2. Check status code.",404 Not Found,Server returns HTTP 404 Not Found.
+TC_USER_001,User,/user,POST,Create a single user with valid payload,Happy Path,P1,API service is running.,Content-Type: application/json,"{""id"": 200001, ""username"": ""auto_user_001"", ""firstName"": ""Automation"", ""lastName"": ""Tester"", ""email"": ""auto_user_001@test.com"", ""password"": ""PassWord123!"", ""phone"": ""0901234567"", ""userStatus"": 1}","1. Send POST request to /user with valid user JSON payload.
+2. Verify status code and code=200 in response.",200 OK,Server returns code=200 in response body confirming user creation.
+TC_USER_002,User,/user,POST,Create user with invalid email format,Validation,P2,API service is running.,Content-Type: application/json,"{""id"": 200002, ""username"": ""invalid_email_user"", ""email"": ""not_an_email""}","1. Send POST request with invalid email format.
+2. Verify status code.",200 / 400,Server validates email format or accepts raw string payload.
+TC_USER_003,User,/user/createWithArray,POST,Create users with array input,Happy Path,P2,API service is running.,Content-Type: application/json,"[{""id"": 200003, ""username"": ""user_arr_1"", ""email"": ""user1@test.com""}, {""id"": 200004, ""username"": ""user_arr_2"", ""email"": ""user2@test.com""}]","1. Send POST request to /user/createWithArray with array of user objects.
+2. Verify HTTP status code.",200 OK,Server returns HTTP 200 OK confirming creation of user array.
+TC_USER_004,User,/user/createWithList,POST,Create users with list input,Happy Path,P2,API service is running.,Content-Type: application/json,"[{""id"": 200005, ""username"": ""user_list_1"", ""email"": ""userlist1@test.com""}, {""id"": 200006, ""username"": ""user_list_2"", ""email"": ""userlist2@test.com""}]","1. Send POST request to /user/createWithList with list of user objects.
+2. Verify HTTP status code.",200 OK,Server returns HTTP 200 OK confirming creation of user list.
+TC_USER_005,User,/user/login,GET,User login with valid credentials,Happy Path,P1,User account auto_user_001 exists on server.,Accept: application/json,Query Params: username=auto_user_001&password=PassWord123!,"1. Send GET request to /user/login with valid credentials.
+2. Check status code and logged in session message in response.",200 OK,Returns HTTP 200 OK with message containing logged in user session string.
+TC_USER_006,User,/user/login,GET,User login missing password parameter,Validation,P2,API service is running.,Accept: application/json,Query Params: username=auto_user_001,"1. Send GET request to /user/login without password parameter.
+2. Check status code.",400 / 200,Server returns 400 Bad Request validation error or handles missing param.
+TC_USER_007,User,/user/logout,GET,User logout current session,Happy Path,P2,User is logged in.,Accept: application/json,None,"1. Send GET request to /user/logout.
+2. Check HTTP status code.",200 OK,Server returns HTTP 200 OK with message 'ok'.
+TC_USER_008,User,/user/{username},GET,Get user by valid username,Happy Path,P1,User auto_user_001 exists on server.,Accept: application/json,Path Param: username=auto_user_001,"1. Send GET request to /user/auto_user_001.
+2. Check status code and verify user details in response.",200 OK,Returns complete user object with matching username and email.
+TC_USER_009,User,/user/{username},GET,Get user by non-existent username,Negative,P2,User non_existent_user_999999 does not exist.,Accept: application/json,Path Param: username=non_existent_user_999999,"1. Send GET request to /user/non_existent_user_999999.
+2. Verify HTTP status code.",404 Not Found,Server returns HTTP 404 User Not Found.
+TC_USER_010,User,/user/{username},PUT,Update user details,Happy Path,P1,User auto_user_001 exists on server.,Content-Type: application/json,"Path Param: username=auto_user_001; Body: {""username"": ""auto_user_001"", ""firstName"": ""UpdatedFirstName"", ""email"": ""auto_user_001@test.com""}","1. Send PUT request to /user/auto_user_001 with updated firstName.
+2. Verify HTTP status code.",200 OK,Server returns HTTP 200 OK confirming user update.
+TC_USER_011,User,/user/{username},DELETE,Delete user by username,Happy Path,P1,User auto_user_001 exists on server.,Accept: application/json,Path Param: username=auto_user_001,"1. Send DELETE request to /user/auto_user_001.
+2. Verify HTTP status code.",200 OK,Server returns HTTP 200 OK confirming user deletion.
+TC_USER_012,User,/user/{username},DELETE,Delete non-existent user,Negative,P2,User non_existent_user_999999 does not exist.,Accept: application/json,Path Param: username=non_existent_user_999999,"1. Send DELETE request to /user/non_existent_user_999999.
+2. Check status code.",404 Not Found,Server returns HTTP 404 Not Found.

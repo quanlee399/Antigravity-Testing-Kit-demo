@@ -1,0 +1,53 @@
+﻿Test Case ID,Module,Endpoint,HTTP Method,Test Title,Test Type,Priority,Pre-conditions,Headers / Auth,Request Body / Params,Test Steps,Expected Status Code,Expected Response / Behavior
+TC_REQRES_USER_001,User,/api/users,GET,List users with pagination,Happy Path,P1,ReqRes API is online.,Accept: application/json; x-api-key: reqres-free-key,Query Param: page=2,"1. Send GET request to /api/users?page=2.
+2. Verify HTTP status code.
+3. Check response data array.",200 OK / 401,"Returns paginated data array with 6 users, matching page=2."
+TC_REQRES_USER_002,User,/api/users,POST,Create new user with valid payload,Happy Path,P1,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""name"": ""morpheus"", ""job"": ""leader""}","1. Send POST request with valid name and job.
+2. Verify HTTP status code.
+3. Check id and createdAt in response.",201 Created / 401,"Returns created user object with name 'morpheus', job 'leader', id, and createdAt."
+TC_REQRES_USER_003,User,/api/users,POST,Create user missing name field,Validation,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""job"": ""leader""}","1. Send POST request missing name field.
+2. Verify status code response.",201 / 400 / 401,Server handles missing name field.
+TC_REQRES_USER_004,User,/api/users,POST,Create user missing job field,Validation,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""name"": ""morpheus""}","1. Send POST request missing job field.
+2. Verify status code response.",201 / 400 / 401,Server handles missing job field.
+TC_REQRES_USER_005,User,/api/users,POST,Create user with XSS script in name,Security,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""name"": ""<script>alert('XSS')</script>"", ""job"": ""tester""}","1. Send POST request with XSS script in name field.
+2. Check response handles string safely.",201 Created / 401,Response retains text string without executing script payload.
+TC_REQRES_USER_006,User,/api/users/{id},GET,Get single user by valid ID,Happy Path,P1,User ID 2 exists on server.,Accept: application/json; x-api-key: reqres-free-key,Path Param: id=2,"1. Send GET request to /api/users/2.
+2. Verify HTTP status code.
+3. Check user email and first_name in response.",200 OK / 401,"Returns user object data with id=2, email='janet.weaver@reqres.in'."
+TC_REQRES_USER_007,User,/api/users/{id},GET,Get single user by non-existent ID,Negative,P2,User ID 23 does not exist.,Accept: application/json; x-api-key: reqres-free-key,Path Param: id=23,"1. Send GET request to /api/users/23.
+2. Verify HTTP status code.",404 Not Found / 401,Server returns HTTP 404 Not Found with empty JSON object.
+TC_REQRES_USER_008,User,/api/users/{id},PUT,Update user full details via PUT,Happy Path,P1,User ID 2 exists on server.,Content-Type: application/json; x-api-key: reqres-free-key,"Path Param: id=2; Body: {""name"": ""morpheus"", ""job"": ""zion resident""}","1. Send PUT request with complete updated user details.
+2. Check status code and updatedAt timestamp.",200 OK / 401,Returns updated user object with job 'zion resident' and updatedAt.
+TC_REQRES_USER_009,User,/api/users/{id},PATCH,Partial update user via PATCH,Happy Path,P1,User ID 2 exists on server.,Content-Type: application/json; x-api-key: reqres-free-key,"Path Param: id=2; Body: {""job"": ""zion resident""}","1. Send PATCH request with partial job update.
+2. Check status code and updatedAt timestamp.",200 OK / 401,Returns user object with patched job field.
+TC_REQRES_USER_010,User,/api/users/{id},DELETE,Delete user by valid ID,Happy Path,P1,User ID 2 exists on server.,x-api-key: reqres-free-key,Path Param: id=2,"1. Send DELETE request to /api/users/2.
+2. Verify HTTP status code.",204 No Content / 401,Server returns HTTP 204 No Content.
+TC_REQRES_USER_011,User,/api/users,GET,List users with large page number,Boundary,P3,ReqRes API is online.,Accept: application/json; x-api-key: reqres-free-key,Query Param: page=9999,"1. Send GET request with page=9999.
+2. Verify response handles out of bound page.",200 OK / 401,Returns empty data array [] without server crash.
+TC_REQRES_AUTH_001,Auth,/api/register,POST,Register user with valid credentials,Happy Path,P1,Fixture user eve.holt@reqres.in exists in DB.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""eve.holt@reqres.in"", ""password"": ""pistol""}","1. Send POST request to /api/register with valid fixture credentials.
+2. Verify status code and token response.",200 OK / 401,Returns id=4 and token string.
+TC_REQRES_AUTH_002,Auth,/api/register,POST,Register user missing password,Validation,P1,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""sydney@fife""}","1. Send POST request to /api/register without password.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""Missing password""."
+TC_REQRES_AUTH_003,Auth,/api/register,POST,Register user missing email,Validation,P1,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""password"": ""pistol""}","1. Send POST request to /api/register without email.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""Missing email or username""."
+TC_REQRES_AUTH_004,Auth,/api/register,POST,Register un-registered email in ReqRes DB,Negative,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""unregistered@test.com"", ""password"": ""pistol""}","1. Send POST request with non-fixture email.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""Note: Only defined users succeed registration""."
+TC_REQRES_AUTH_005,Auth,/api/login,POST,Login user with valid credentials,Happy Path,P1,Fixture user eve.holt@reqres.in exists in DB.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""eve.holt@reqres.in"", ""password"": ""cityslicka""}","1. Send POST request to /api/login with valid fixture credentials.
+2. Verify status code and token response.",200 OK / 401,"Returns token string ""QpwL5tke4Pnpja7X4""."
+TC_REQRES_AUTH_006,Auth,/api/login,POST,Login user missing password,Validation,P1,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""peter@klaven""}","1. Send POST request to /api/login without password.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""Missing password""."
+TC_REQRES_AUTH_007,Auth,/api/login,POST,Login user missing email,Validation,P1,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""password"": ""cityslicka""}","1. Send POST request to /api/login without email.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""Missing email or username""."
+TC_REQRES_AUTH_008,Auth,/api/login,POST,Login user with unregistered email,Negative,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,"{""email"": ""unregistered@test.com"", ""password"": ""cityslicka""}","1. Send POST request with non-fixture email.
+2. Check error message.",400 Bad Request / 401,"Returns error message ""user not found""."
+TC_REQRES_AUTH_009,Auth,/api/logout,POST,Logout user,Happy Path,P2,ReqRes API is online.,Content-Type: application/json; x-api-key: reqres-free-key,{},"1. Send POST request to /api/logout.
+2. Check HTTP status code.",200 OK / 401,Returns empty JSON object {} confirming logout.
+TC_REQRES_RES_001,Resource,/api/unknown,GET,List unknown resources (colors),Happy Path,P1,ReqRes API is online.,Accept: application/json; x-api-key: reqres-free-key,None,"1. Send GET request to /api/unknown.
+2. Verify HTTP status code.
+3. Check resource data array.",200 OK / 401,Returns data array of Pantone color objects.
+TC_REQRES_RES_002,Resource,/api/unknown/{id},GET,Get resource by valid ID,Happy Path,P1,Resource ID 2 exists on server.,Accept: application/json; x-api-key: reqres-free-key,Path Param: id=2,"1. Send GET request to /api/unknown/2.
+2. Verify status code and color details.",200 OK / 401,"Returns single resource object data with id=2, name='fuchsia rose'."
+TC_REQRES_RES_003,Resource,/api/unknown/{id},GET,Get resource by non-existent ID,Negative,P2,Resource ID 23 does not exist.,Accept: application/json; x-api-key: reqres-free-key,Path Param: id=23,"1. Send GET request to /api/unknown/23.
+2. Verify HTTP status code.",404 Not Found / 401,Returns empty JSON object {} with 404 Not Found.
+TC_REQRES_RES_004,Resource,/api/unknown/{id},GET,Get resource by invalid string ID,Negative,P2,ReqRes API is online.,Accept: application/json; x-api-key: reqres-free-key,Path Param: id=invalid_string_id,"1. Send GET request with non-numeric string ID.
+2. Verify HTTP status code.",404 Not Found / 401,Returns HTTP 404 Not Found.

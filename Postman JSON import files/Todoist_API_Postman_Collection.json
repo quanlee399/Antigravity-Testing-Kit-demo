@@ -1,0 +1,1186 @@
+{
+	"info": {
+		"_postman_id": "todoist-api-v1-collection-2026",
+		"name": "Todoist API v1 Test Suite (Full Modules)",
+		"description": "Complete Postman Collection covering User, Projects, Sections, Tasks, Comments, Labels, and ID Mappings modules of Todoist REST API v1 (https://api.todoist.com/api/v1) using native Postman Parent Auth Inheritance.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{ "key": "baseUrl", "value": "https://api.todoist.com/api/v1", "type": "string" },
+		{ "key": "bearerToken", "value": "dummy_todoist_token_123", "type": "string" },
+		{ "key": "projectId", "value": "2203306160", "type": "string" },
+		{ "key": "sectionId", "value": "7025", "type": "string" },
+		{ "key": "taskId", "value": "2999794622", "type": "string" },
+		{ "key": "commentId", "value": "2999794622", "type": "string" },
+		{ "key": "labelId", "value": "2156154810", "type": "string" }
+	],
+	"item": [
+		{
+			"name": "User Module",
+			"item": [
+				{
+					"name": "TC_TODOIST_USER_001: [Happy Path] Get current user profile",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});",
+								"pm.test('Returns profile details', function () {",
+								"    var jsonData = pm.response.json();",
+								"    pm.expect(jsonData).to.have.property('id');",
+								"    pm.expect(jsonData).to.have.property('email');",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_USER_002: [Negative/Auth] Get user profile missing Bearer token",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 401 Unauthorized', function () {",
+								"    pm.response.to.have.status(401);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [ { "key": "Accept", "value": "application/json" } ],
+						"url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_USER_003: [Negative/Auth] Get user profile with invalid Bearer token",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 401 Unauthorized', function () {",
+								"    pm.response.to.have.status(401);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "invalid_token_xyz_123",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Projects Module",
+			"item": [
+				{
+					"name": "TC_TODOIST_PROJ_001: [Happy Path] List all user projects",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});",
+								"pm.test('Returns array of projects', function () {",
+								"    pm.expect(pm.response.json()).to.be.an('array');",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_002: [Happy Path] Create new project",
+					"event": [{
+						"listen": "prerequest",
+						"script": {
+							"exec": [
+								"pm.collectionVariables.set('projName', 'Auto_Project_' + Date.now());"
+							],
+							"type": "text/javascript"
+						}
+					}, {
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});",
+								"var jsonData = pm.response.json();",
+								"pm.collectionVariables.set('projectId', jsonData.id);"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{projName}}\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_003: [Validation] Create project missing required name field",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 400 Bad Request', function () {",
+								"    pm.response.to.have.status(400);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{}" },
+						"url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_004: [Happy Path] Get project by valid ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_005: [Negative] Get project by non-existent ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 404 Not Found', function () {",
+								"    pm.response.to.have.status(404);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/projects/9999999999", "host": ["{{baseUrl}}"], "path": ["projects", "9999999999"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_006: [Happy Path] Update project name",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated_Project_Name\"\n}" },
+						"url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_007: [Happy Path] Archive project",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/projects/{{projectId}}/archive", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}", "archive"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_008: [Happy Path] Unarchive project",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/projects/{{projectId}}/unarchive", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}", "unarchive"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_PROJ_009: [Happy Path] Delete project by ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Tasks Module",
+			"item": [
+				{
+					"name": "TC_TODOIST_TASK_001: [Happy Path] List all active tasks",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_002: [Happy Path] Create task with valid content and due date",
+					"event": [{
+						"listen": "prerequest",
+						"script": {
+							"exec": [
+								"pm.collectionVariables.set('taskContent', 'Auto Task ' + Date.now());"
+							],
+							"type": "text/javascript"
+						}
+					}, {
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});",
+								"var jsonData = pm.response.json();",
+								"pm.collectionVariables.set('taskId', jsonData.id);"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{\n  \"content\": \"{{taskContent}}\",\n  \"due_string\": \"tomorrow\"\n}" },
+						"url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_003: [Validation] Create task missing required content",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 400 Bad Request', function () {",
+								"    pm.response.to.have.status(400);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{\n  \"due_string\": \"tomorrow\"\n}" },
+						"url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_004: [Security/XSS] Create task with XSS script in content",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{\n  \"content\": \"<script>alert('XSS')</script>\"\n}" },
+						"url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_005: [Happy Path] Get task details by valid ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_006: [Negative] Get task details by non-existent ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 404 Not Found', function () {",
+								"    pm.response.to.have.status(404);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Accept", "value": "application/json" }
+						],
+						"url": { "raw": "{{baseUrl}}/tasks/9999999999", "host": ["{{baseUrl}}"], "path": ["tasks", "9999999999"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_007: [Happy Path] Update task content and priority",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 200 OK', function () {",
+								"    pm.response.to.have.status(200);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": { "mode": "raw", "raw": "{\n  \"content\": \"Buy organic milk\",\n  \"priority\": 4\n}" },
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_008: [Happy Path] Close / Complete task",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}/close", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}", "close"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_009: [Happy Path] Reopen completed task",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}/reopen", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}", "reopen"] }
+					}
+				},
+				{
+					"name": "TC_TODOIST_TASK_010: [Happy Path] Delete task by ID",
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"pm.test('Status code is 204 No Content', function () {",
+								"    pm.response.to.have.status(204);",
+								"});"
+							],
+							"type": "text/javascript"
+						}
+					}],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "ID Mappings Module",
+			"item": [
+				{
+					"name": "1. 200 Successful Response Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_200_001: Get ID mappings for obj_name = 'sections'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/sections/7025252525",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "sections", "7025252525"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_002: Get ID mappings for obj_name = 'tasks'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_003: Get ID mappings for obj_name = 'comments'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/comments/3001292929",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "comments", "3001292929"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_004: Get ID mappings for obj_name = 'reminders'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/reminders/4009191919",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "reminders", "4009191919"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_005: Get ID mappings for obj_name = 'location_reminders'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/location_reminders/5001212121",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "location_reminders", "5001212121"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_006: Get ID mappings for obj_name = 'projects'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/projects/2345672345",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "projects", "2345672345"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_007: Multiple valid Base32 comma-separated IDs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Response body is an array', function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6vfwjjjfg2xqx6pa,6wmvpf2hn2jp6mc2",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6vfwjjjfg2xqx6pa,6wmvpf2hn2jp6mc2"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_200_008: [Boundary] Non-existent valid Base32 ID returns empty array []",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200 OK', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test('Returns empty array', function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.be.an('array');",
+											"    pm.expect(jsonData.length).to.eql(0);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/nonexistentbase32id",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "nonexistentbase32id"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "2. 400 Bad Request Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_400_001: [Validation] Invalid obj_name enum",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 400 Bad Request', function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/invalid_enum/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "invalid_enum", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_400_002: [Validation] Unsupported obj_name 'users'",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 400 Bad Request', function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/users/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "users", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_400_003: [Validation] Non-Base32 digits in obj_ids (digits 0,1,8,9 or uppercase letters)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 400 Bad Request', function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"pm.test('Returns INVALID_ARGUMENT_VALUE for Non-base32 digit', function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error_tag).to.eql('INVALID_ARGUMENT_VALUE');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6VfWjjjFg2xqX6Pa,6WMVPf8Hn8JP6mC8,918273645",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6VfWjjjFg2xqX6Pa,6WMVPf8Hn8JP6mC8,918273645"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_400_004: [Validation] Comma-separated obj_name string (e.g. 'tasks,projects')",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 400 Bad Request', function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks,projects/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks,projects", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "3. 401 Unauthorized Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_401_001: [Auth] Request missing Authorization header",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 401 Unauthorized', function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_401_002: [Auth] Request with invalid Bearer Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 401 Unauthorized', function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "invalid_fake_token_9999",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "4. 403 Forbidden Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_403_001: [Auth] Request with restricted scope token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 403 Forbidden or 401', function () {",
+											"    pm.expect([401, 403]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "restricted_token_scope",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "5. 404 Not Found Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_404_001: [Route] Non-existent route path",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404 Not Found', function () {",
+											"    pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/invalid_id_mappings/tasks/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["invalid_id_mappings", "tasks", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_404_002: [Route] Missing obj_ids path parameter",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404 or 400', function () {",
+											"    pm.expect([400, 404]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "6. Security Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_SEC_001: [Security] SQL Injection in obj_name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Safely rejected with 400 or 404 (No 500)', function () {",
+											"    pm.expect([400, 404]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/' OR '1'='1/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "' OR '1'='1", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_SEC_002: [Security] SQL Injection in obj_ids",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Safely handled without SQL execution', function () {",
+											"    pm.expect([200, 400, 404]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/'; DROP TABLE id_mappings;--",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "'; DROP TABLE id_mappings;--"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_SEC_003: [Security] XSS payload in obj_name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Safely rejected with 400 or 404', function () {",
+											"    pm.expect([400, 404]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/<script>alert(1)</script>/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "<script>alert(1)</script>", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						},
+						{
+							"name": "TC_IDMAP_SEC_004: [Security] Path Traversal payload",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Blocked safely with 400 or 404', function () {",
+											"    pm.expect([400, 404]).to.include(pm.response.code);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/../../etc/passwd/6vfwjjjfg2xqx6pa",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "..", "..", "etc", "passwd", "6vfwjjjfg2xqx6pa"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "7. 500 Robustness & Stress Tests",
+					"item": [
+						{
+							"name": "TC_IDMAP_500_001: [Robustness] Send 500 comma-separated Base32 IDs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is NOT 500 Server Error', function () {",
+											"    pm.expect(pm.response.code).to.not.equal(500);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/id_mappings/tasks/id22,id23,id24,id25,id26,id27,id32,id33,id34,id35",
+									"host": ["{{baseUrl}}"],
+									"path": ["id_mappings", "tasks", "id22,id23,id24,id25,id26,id27,id32,id33,id34,id35"]
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

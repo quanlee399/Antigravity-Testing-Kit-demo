@@ -1,0 +1,72 @@
+﻿Test Case ID,Module,Endpoint,HTTP Method,Test Title,Test Type,Priority,Pre-conditions,Headers / Auth,Request Body / Params,Test Steps,Expected Status Code,Expected Response / Behavior
+TC_AUTH_001,Auth,/auth,POST,Dynamic Token Creation with valid credentials,Happy Path,P1,Restful-Booker API service is online.,Content-Type: application/json,"{""username"": ""admin"", ""password"": ""password123""}","1. Send POST request to /auth with valid admin credentials.
+2. Verify status code is 200 OK.
+3. Verify response JSON contains string token field.",200 OK,"Response body contains {""token"": ""<string_token_value>""}."
+TC_AUTH_002,Auth,/auth,POST,Create Token with invalid username,Negative,P2,API service is online.,Content-Type: application/json,"{""username"": ""invalid_admin"", ""password"": ""password123""}","1. Send POST request with invalid username.
+2. Verify response status code and body message.",200 OK,"Response body contains {""reason"": ""Bad credentials""}."
+TC_AUTH_003,Auth,/auth,POST,Create Token with invalid password,Negative,P2,API service is online.,Content-Type: application/json,"{""username"": ""admin"", ""password"": ""wrong_password""}","1. Send POST request with invalid password.
+2. Verify response status code and body message.",200 OK,"Response body contains {""reason"": ""Bad credentials""}."
+TC_AUTH_004,Auth,/auth,POST,Create Token missing password field,Validation,P2,API service is online.,Content-Type: application/json,"{""username"": ""admin""}","1. Send POST request missing password field.
+2. Verify response body.",200 OK,"Response body contains {""reason"": ""Bad credentials""}."
+TC_AUTH_005,Auth,/auth,POST,Create Token with empty body payload,Validation,P2,API service is online.,Content-Type: application/json,{},"1. Send POST request with empty JSON payload.
+2. Verify response body.",200 OK,"Response body contains {""reason"": ""Bad credentials""}."
+TC_AUTH_006,Auth / Booking,/booking/{id},PUT,Dynamic Token Flow: Update booking using dynamic token,Happy Path,P1,Valid dynamic token acquired from /auth; Booking ID exists.,Content-Type: application/json; Accept: application/json; Cookie: token=<token_value>,"{""firstname"": ""DynamicJim"", ""lastname"": ""Brown"", ""totalprice"": 111, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Get token via POST /auth.
+2. Create booking via POST /booking.
+3. Send PUT request with Cookie: token=<token> header.
+4. Verify update success.",200 OK,Response body returns updated booking with firstname 'DynamicJim'.
+TC_AUTH_007,Auth / Booking,/booking/{id},DELETE,Auth Bypass: Perform DELETE without Cookie or Auth header,Security,P1,Booking ID exists on server.,No Auth Header or Cookie provided,Path Param: bookingId,"1. Create booking via POST /booking.
+2. Send DELETE request without any authentication header.
+3. Verify access rejection.",403 Forbidden,Server returns HTTP 403 Forbidden.
+TC_AUTH_008,Auth / Booking,/booking/{id},DELETE,Auth Failure: Perform DELETE with invalid Cookie token,Security,P2,Booking ID exists on server.,Cookie: token=invalid_token_xyz,Path Param: bookingId,"1. Send DELETE request with invalid token string in Cookie header.
+2. Verify access rejection.",403 Forbidden,Server returns HTTP 403 Forbidden.
+TC_AUTH_009,Auth / Booking,/booking/{id},DELETE,Alternative Auth: Perform DELETE using Basic Auth header,Happy Path,P1,Booking ID exists on server.,Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=,Path Param: bookingId,"1. Create booking via POST /booking.
+2. Send DELETE request with Basic Auth header.
+3. Verify deletion success.",201 Created,Server returns HTTP 201 Created confirming deletion.
+TC_BOOKING_001,Booking,/booking,POST,Create a new booking with valid payload,Happy Path,P1,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""Brown"", ""totalprice"": 111, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}, ""additionalneeds"": ""Breakfast""}","1. Send POST request to /booking with valid booking JSON payload.
+2. Verify HTTP status code.
+3. Verify bookingid is generated.",200 OK,Response contains generated bookingid and matching booking object.
+TC_BOOKING_002,Booking,/booking,POST,Boundary: Create booking with totalprice = 0,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""Zero"", ""totalprice"": 0, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request with totalprice = 0.
+2. Verify response status code and totalprice value.",200 OK,Response body contains totalprice = 0.
+TC_BOOKING_003,Booking,/booking,POST,Boundary: Create booking with negative totalprice,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""Negative"", ""totalprice"": -100, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request with totalprice = -100.
+2. Verify response status code.",200 / 400,Server returns validation error 400 or handles negative price.
+TC_BOOKING_004,Booking,/booking,POST,Boundary: Create booking with large totalprice,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""Large"", ""totalprice"": 9999999, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request with totalprice = 9999999.
+2. Verify response status code and totalprice value.",200 OK,Response body contains totalprice = 9999999.
+TC_BOOKING_005,Booking,/booking,POST,Boundary: Create booking with depositpaid = false,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""NoDeposit"", ""totalprice"": 100, ""depositpaid"": false, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request with depositpaid = false.
+2. Verify response depositpaid boolean value.",200 OK,Response body contains depositpaid = false.
+TC_BOOKING_006,Booking,/booking,POST,Boundary Date: Create booking with checkin == checkout,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""SameDay"", ""totalprice"": 100, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-01""}}","1. Send POST request with checkin date equal to checkout date.
+2. Verify status code.",200 OK,Server accepts same-day checkin/checkout with 200 OK.
+TC_BOOKING_007,Booking,/booking,POST,Boundary Date: Create booking with checkin after checkout,Boundary,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""WrongDate"", ""totalprice"": 100, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-10"", ""checkout"": ""2026-09-01""}}","1. Send POST request with checkin date later than checkout date.
+2. Verify status code response.",200 / 400,Server returns validation error 400 or accepts payload.
+TC_BOOKING_008,Booking,/booking,POST,Validation: Create booking missing required firstname,Validation,P2,API service is online.,Content-Type: application/json,"{""lastname"": ""NoFirstname"", ""totalprice"": 100, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request missing firstname field.
+2. Verify response status code.",400 / 500,Server returns HTTP 400 Bad Request or 500 Internal Server Error.
+TC_BOOKING_009,Booking,/booking,POST,Validation: Create booking missing bookingdates object,Validation,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""Jim"", ""lastname"": ""NoDates"", ""totalprice"": 100, ""depositpaid"": true}","1. Send POST request missing bookingdates object.
+2. Verify response status code.",400 / 500,Server returns HTTP 400 Bad Request or 500 Internal Server Error.
+TC_BOOKING_010,Booking,/booking,POST,Security: Create booking with XSS script in firstname,Security,P2,API service is online.,Content-Type: application/json,"{""firstname"": ""<script>alert('XSS')</script>"", ""lastname"": ""XSS"", ""totalprice"": 100, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}}","1. Send POST request with XSS script tag in firstname field.
+2. Verify response handles script string safely.",200 OK,Response retains text string without executing script payload.
+TC_BOOKING_011,Booking,/booking,GET,Get all booking IDs,Happy Path,P1,Bookings exist on server.,Accept: application/json,None,"1. Send GET request to /booking.
+2. Verify HTTP status code.
+3. Verify response is a JSON array of objects containing bookingid.",200 OK,"Returns JSON array of booking ID objects e.g. [{'bookingid': 1}, {'bookingid': 2}]."
+TC_BOOKING_012,Booking,/booking,GET,Filter booking IDs by firstname and lastname,Happy Path,P2,Bookings exist with specified names.,Accept: application/json,Query Params: firstname=Jim&lastname=Brown,"1. Send GET request with firstname and lastname query filters.
+2. Verify HTTP status code and array response.",200 OK,Returns JSON array of matching booking IDs.
+TC_BOOKING_013,Booking,/booking,GET,Filter booking IDs by checkin and checkout dates,Happy Path,P2,Bookings exist with date range.,Accept: application/json,Query Params: checkin=2026-01-01&checkout=2026-12-31,"1. Send GET request with checkin/checkout date query filters.
+2. Verify array response.",200 OK,Returns JSON array of matching booking IDs.
+TC_BOOKING_014,Booking,/booking/{id},GET,Get booking by valid ID,Happy Path,P1,Target booking ID exists on server.,Accept: application/json,Path Param: bookingId,"1. Create booking via POST /booking.
+2. Send GET request to /booking/{id}.
+3. Check response status code and properties.",200 OK,"Returns booking object with firstname, lastname, totalprice, and bookingdates."
+TC_BOOKING_015,Booking,/booking/{id},GET,Get booking by non-existent ID,Negative,P2,Booking ID 999999999 does not exist.,Accept: application/json,Path Param: bookingId=999999999,"1. Send GET request to /booking/999999999.
+2. Verify HTTP status code.",404 Not Found,Server returns HTTP 404 Not Found.
+TC_BOOKING_016,Booking,/booking/{id},GET,Get booking by invalid string ID,Negative,P2,API service is online.,Accept: application/json,Path Param: bookingId=invalid_string_id,"1. Send GET request with non-numeric string ID.
+2. Verify status code response.",404 / 400,Server returns HTTP 404 Not Found or 400 Bad Request.
+TC_BOOKING_017,Booking,/booking/{id},PUT,Full Update Booking (PUT) with token,Happy Path,P1,Valid Auth Token acquired; Booking ID exists.,Content-Type: application/json; Accept: application/json; Cookie: token=<token>,"{""firstname"": ""UpdatedJim"", ""lastname"": ""UpdatedBrown"", ""totalprice"": 222, ""depositpaid"": true, ""bookingdates"": {""checkin"": ""2026-09-01"", ""checkout"": ""2026-09-10""}, ""additionalneeds"": ""Lunch""}","1. Create booking.
+2. Send PUT request with complete updated booking payload and Cookie token header.
+3. Verify update.",200 OK,Returns updated booking object with firstname 'UpdatedJim' and additionalneeds 'Lunch'.
+TC_BOOKING_018,Booking,/booking/{id},PATCH,Partial Update Booking (PATCH) with token,Happy Path,P1,Valid Auth Token acquired; Booking ID exists.,Content-Type: application/json; Accept: application/json; Cookie: token=<token>,"{""firstname"": ""PatchedJim""}","1. Create booking.
+2. Send PATCH request with partial payload {'firstname': 'PatchedJim'} and Cookie token header.
+3. Verify partial update.",200 OK,Returns booking object with updated firstname 'PatchedJim' while keeping other fields unchanged.
+TC_BOOKING_019,Booking,/booking/{id},DELETE,Delete booking (DELETE) with token,Happy Path,P1,Valid Auth Token acquired; Booking ID exists.,Cookie: token=<token>,Path Param: bookingId,"1. Create booking.
+2. Send DELETE request with Cookie token header.
+3. Verify deletion status code.",201 Created,Server returns HTTP 201 Created confirming deletion.
+TC_BOOKING_020,Booking,/booking/{id},DELETE,Delete non-existent booking ID,Negative,P2,Booking ID 999999999 does not exist.,Cookie: token=<token>,Path Param: bookingId=999999999,"1. Send DELETE request to non-existent ID 999999999.
+2. Check HTTP status code.",405 / 404,Server returns HTTP 405 Method Not Allowed or 404 Not Found.
+TC_PING_001,Ping,/ping,GET,Ping Health Check,Health Check,P1,API service is online.,None,None,"1. Send GET request to /ping.
+2. Verify status code and body content.",201 Created,Server returns HTTP 201 Created with text body 'Created'.

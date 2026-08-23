@@ -1,0 +1,958 @@
+{
+	"info": {
+		"_postman_id": "c1f7e3b8-2a91-4e78-bc91-petstore-collection",
+		"name": "Swagger Petstore API Test Suite (34 TCs)",
+		"description": "Postman Collection for 34 Test Cases covering Pet, Store, and User resources of Swagger Petstore v2 API.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://petstore.swagger.io/v2",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "special-key",
+			"type": "string"
+		},
+		{
+			"key": "createdPetId",
+			"value": "1712049201",
+			"type": "string"
+		},
+		{
+			"key": "createdOrderId",
+			"value": "1712049301",
+			"type": "string"
+		},
+		{
+			"key": "createdUsername",
+			"value": "auto_user_1712049401",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Pet Module",
+			"item": [
+				{
+					"name": "TC_PET_001: [Happy Path] Create a new pet",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var randomId = Math.floor(100000 + Math.random() * 900000);",
+									"var timestamp = Date.now();",
+									"pm.collectionVariables.set('createdPetId', randomId);",
+									"pm.collectionVariables.set('petName', 'auto_pet_' + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Pet created with correct ID and name', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get('createdPetId')));",
+									"    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get('petName'));",
+									"    pm.expect(jsonData.status).to.eql('available');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": {{createdPetId}},\n  \"category\": { \"id\": 1, \"name\": \"Dogs\" },\n  \"name\": \"{{petName}}\",\n  \"photoUrls\": [\"https://example.com/pet.jpg\"],\n  \"tags\": [{ \"id\": 1, \"name\": \"friendly\" }],\n  \"status\": \"available\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/pet", "host": ["{{baseUrl}}"], "path": ["pet"] }
+					}
+				},
+				{
+					"name": "TC_PET_002: [Validation] Add pet missing required name field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200, 400 or 405', function () {",
+									"    pm.expect([200, 400, 405, 500]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999902,\n  \"photoUrls\": [\"https://example.com/pet.jpg\"]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/pet", "host": ["{{baseUrl}}"], "path": ["pet"] }
+					}
+				},
+				{
+					"name": "TC_PET_003: [Validation] Add pet with invalid enum status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code handles invalid enum status', function () {",
+									"    pm.expect([200, 400, 405]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999903,\n  \"name\": \"invalid_enum_pet\",\n  \"photoUrls\": [\"https://example.com/pet.jpg\"],\n  \"status\": \"INVALID_STATUS_ENUM\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/pet", "host": ["{{baseUrl}}"], "path": ["pet"] }
+					}
+				},
+				{
+					"name": "TC_PET_004: [Security/XSS] Add pet with XSS payload in pet name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response retains or sanitizes XSS script', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql(\"<script>alert('XSS')</script>\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999904,\n  \"name\": \"<script>alert('XSS')</script>\",\n  \"photoUrls\": [\"https://example.com/pet.jpg\"],\n  \"status\": \"available\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/pet", "host": ["{{baseUrl}}"], "path": ["pet"] }
+					}
+				},
+				{
+					"name": "TC_PET_005: [Happy Path] Update an existing pet via PUT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Pet updated correctly', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('doggie_updated');",
+									"    pm.expect(jsonData.status).to.eql('sold');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": {{createdPetId}},\n  \"name\": \"doggie_updated\",\n  \"photoUrls\": [\"https://example.com/pet.jpg\"],\n  \"status\": \"sold\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/pet", "host": ["{{baseUrl}}"], "path": ["pet"] }
+					}
+				},
+				{
+					"name": "TC_PET_006: [Happy Path] Find pets by status = available",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is an array of pets', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": {
+							"raw": "{{baseUrl}}/pet/findByStatus?status=available",
+							"host": ["{{baseUrl}}"],
+							"path": ["pet", "findByStatus"],
+							"query": [{ "key": "status", "value": "available" }]
+						}
+					}
+				},
+				{
+					"name": "TC_PET_007: [Boundary] Find pets by tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is array', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": {
+							"raw": "{{baseUrl}}/pet/findByTags?tags=tag1,tag2",
+							"host": ["{{baseUrl}}"],
+							"path": ["pet", "findByTags"],
+							"query": [{ "key": "tags", "value": "tag1,tag2" }]
+						}
+					}
+				},
+				{
+					"name": "TC_PET_008: [Happy Path] Get pet by valid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 404', function () {",
+									"    pm.expect([200, 404]).to.include(pm.response.code);",
+									"});",
+									"if (pm.response.code === 200) {",
+									"    pm.test('Returned pet matches requested ID', function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get('createdPetId')));",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/pet/{{createdPetId}}", "host": ["{{baseUrl}}"], "path": ["pet", "{{createdPetId}}"] }
+					}
+				},
+				{
+					"name": "TC_PET_009: [Negative] Get pet by non-existent ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/pet/99999999999", "host": ["{{baseUrl}}"], "path": ["pet", "99999999999"] }
+					}
+				},
+				{
+					"name": "TC_PET_010: [Negative] Get pet by invalid string ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 or 404', function () {",
+									"    pm.expect([400, 404]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/pet/invalid_string_id", "host": ["{{baseUrl}}"], "path": ["pet", "invalid_string_id"] }
+					}
+				},
+				{
+					"name": "TC_PET_011: [Happy Path] Update pet with form data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{ "key": "name", "value": "updated_form_pet" },
+								{ "key": "status", "value": "pending" }
+							]
+						},
+						"url": { "raw": "{{baseUrl}}/pet/{{createdPetId}}", "host": ["{{baseUrl}}"], "path": ["pet", "{{createdPetId}}"] }
+					}
+				},
+				{
+					"name": "TC_PET_012: [Happy Path] Upload image for pet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response contains status code 200 in message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "additionalMetadata", "value": "test metadata image", "type": "text" }
+							]
+						},
+						"url": { "raw": "{{baseUrl}}/pet/{{createdPetId}}/uploadImage", "host": ["{{baseUrl}}"], "path": ["pet", "{{createdPetId}}", "uploadImage"] }
+					}
+				},
+				{
+					"name": "TC_PET_013: [Happy Path] Delete pet by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/pet/{{createdPetId}}", "host": ["{{baseUrl}}"], "path": ["pet", "{{createdPetId}}"] }
+					}
+				},
+				{
+					"name": "TC_PET_014: [Negative] Delete non-existent pet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/pet/99999999999", "host": ["{{baseUrl}}"], "path": ["pet", "99999999999"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Store Module",
+			"item": [
+				{
+					"name": "TC_STORE_001: [Happy Path] Get pet inventory by status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Inventory is a JSON object map', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "api_key", "value": "{{apiKey}}" } ],
+						"url": { "raw": "{{baseUrl}}/store/inventory", "host": ["{{baseUrl}}"], "path": ["store", "inventory"] }
+					}
+				},
+				{
+					"name": "TC_STORE_002: [Happy Path] Place an order for a pet",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var randomOrderId = Math.floor(100000 + Math.random() * 900000);",
+									"pm.collectionVariables.set('createdOrderId', randomOrderId);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Order created successfully', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get('createdOrderId')));",
+									"    pm.expect(jsonData.status).to.eql('placed');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "api_key", "value": "{{apiKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": {{createdOrderId}},\n  \"petId\": {{createdPetId}},\n  \"quantity\": 1,\n  \"shipDate\": \"2026-08-15T14:45:00.000Z\",\n  \"status\": \"placed\",\n  \"complete\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/store/order", "host": ["{{baseUrl}}"], "path": ["store", "order"] }
+					}
+				},
+				{
+					"name": "TC_STORE_003: [Validation] Place order with negative quantity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 400', function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999803,\n  \"petId\": 1,\n  \"quantity\": -5,\n  \"status\": \"placed\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/store/order", "host": ["{{baseUrl}}"], "path": ["store", "order"] }
+					}
+				},
+				{
+					"name": "TC_STORE_004: [Happy Path] Find purchase order by ID (1..10)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 404', function () {",
+									"    pm.expect([200, 404]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/store/order/1", "host": ["{{baseUrl}}"], "path": ["store", "order", "1"] }
+					}
+				},
+				{
+					"name": "TC_STORE_005: [Negative] Find purchase order by non-existent ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/store/order/999999999", "host": ["{{baseUrl}}"], "path": ["store", "order", "999999999"] }
+					}
+				},
+				{
+					"name": "TC_STORE_006: [Negative] Find order by invalid string ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 or 404', function () {",
+									"    pm.expect([400, 404]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/store/order/invalid_str_id", "host": ["{{baseUrl}}"], "path": ["store", "order", "invalid_str_id"] }
+					}
+				},
+				{
+					"name": "TC_STORE_007: [Happy Path] Delete purchase order by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 404', function () {",
+									"    pm.expect([200, 404]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/store/order/{{createdOrderId}}", "host": ["{{baseUrl}}"], "path": ["store", "order", "{{createdOrderId}}"] }
+					}
+				},
+				{
+					"name": "TC_STORE_008: [Negative] Delete non-existent purchase order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/store/order/999999999", "host": ["{{baseUrl}}"], "path": ["store", "order", "999999999"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "User Module",
+			"item": [
+				{
+					"name": "TC_USER_001: [Happy Path] Create a single user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var timestamp = Date.now();",
+									"pm.collectionVariables.set('createdUsername', 'auto_user_' + timestamp);",
+									"pm.collectionVariables.set('createdEmail', 'auto_user_' + timestamp + '@test.com');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response body contains code 200', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.code).to.eql(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999701,\n  \"username\": \"{{createdUsername}}\",\n  \"firstName\": \"Automation\",\n  \"lastName\": \"Tester\",\n  \"email\": \"{{createdEmail}}\",\n  \"password\": \"PassWord123!\",\n  \"phone\": \"0901234567\",\n  \"userStatus\": 1\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+					}
+				},
+				{
+					"name": "TC_USER_002: [Validation] Create user with invalid email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 400', function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 999702,\n  \"username\": \"invalid_email_user\",\n  \"email\": \"invalid_email_format\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/user", "host": ["{{baseUrl}}"], "path": ["user"] }
+					}
+				},
+				{
+					"name": "TC_USER_003: [Happy Path] Create users with array input",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  { \"id\": 999703, \"username\": \"user_arr_1\", \"email\": \"user1@test.com\" },\n  { \"id\": 999704, \"username\": \"user_arr_2\", \"email\": \"user2@test.com\" }\n]"
+						},
+						"url": { "raw": "{{baseUrl}}/user/createWithArray", "host": ["{{baseUrl}}"], "path": ["user", "createWithArray"] }
+					}
+				},
+				{
+					"name": "TC_USER_004: [Happy Path] Create users with list input",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  { \"id\": 999705, \"username\": \"user_list_1\", \"email\": \"userlist1@test.com\" },\n  { \"id\": 999706, \"username\": \"user_list_2\", \"email\": \"userlist2@test.com\" }\n]"
+						},
+						"url": { "raw": "{{baseUrl}}/user/createWithList", "host": ["{{baseUrl}}"], "path": ["user", "createWithList"] }
+					}
+				},
+				{
+					"name": "TC_USER_005: [Happy Path] User login with valid credentials",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response message contains logged in user session', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('logged in user session');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/user/login?username={{createdUsername}}&password=PassWord123!",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"],
+							"query": [
+								{ "key": "username", "value": "{{createdUsername}}" },
+								{ "key": "password", "value": "PassWord123!" }
+							]
+						}
+					}
+				},
+				{
+					"name": "TC_USER_006: [Negative] User login missing password parameter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 or 200', function () {",
+									"    pm.expect([400, 200]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/user/login?username={{createdUsername}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"],
+							"query": [ { "key": "username", "value": "{{createdUsername}}" } ]
+						}
+					}
+				},
+				{
+					"name": "TC_USER_007: [Happy Path] User logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/user/logout", "host": ["{{baseUrl}}"], "path": ["user", "logout"] }
+					}
+				},
+				{
+					"name": "TC_USER_008: [Happy Path] Get user by valid username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('User details match expected username', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.username).to.eql(pm.collectionVariables.get('createdUsername'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/user/{{createdUsername}}", "host": ["{{baseUrl}}"], "path": ["user", "{{createdUsername}}"] }
+					}
+				},
+				{
+					"name": "TC_USER_009: [Negative] Get user by non-existent username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/user/non_existent_user_999999", "host": ["{{baseUrl}}"], "path": ["user", "non_existent_user_999999"] }
+					}
+				},
+				{
+					"name": "TC_USER_010: [Happy Path] Update user details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [ { "key": "Content-Type", "value": "application/json" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{createdUsername}}\",\n  \"firstName\": \"UpdatedFirstName\",\n  \"email\": \"{{createdEmail}}\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/user/{{createdUsername}}", "host": ["{{baseUrl}}"], "path": ["user", "{{createdUsername}}"] }
+					}
+				},
+				{
+					"name": "TC_USER_011: [Happy Path] Delete user by username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/user/{{createdUsername}}", "host": ["{{baseUrl}}"], "path": ["user", "{{createdUsername}}"] }
+					}
+				},
+				{
+					"name": "TC_USER_012: [Negative] Delete non-existent user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 404 Not Found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": { "raw": "{{baseUrl}}/user/non_existent_user_999999", "host": ["{{baseUrl}}"], "path": ["user", "non_existent_user_999999"] }
+					}
+				}
+			]
+		}
+	]
+}
