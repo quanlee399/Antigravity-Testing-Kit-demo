@@ -7,6 +7,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   api-tests:
     name: Run Newman API Automation Test Suite
@@ -42,6 +45,14 @@ jobs:
           if [ -f newman-reports/summary.md ]; then
             cat newman-reports/summary.md >> $GITHUB_STEP_SUMMARY
           fi
+
+      - name: 🌐 Deploy HTML Reports Dashboard to GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./newman-reports
+          keep_files: false
 
       - name: 📤 Upload HTML Reports to GitHub Artifacts
         if: always()

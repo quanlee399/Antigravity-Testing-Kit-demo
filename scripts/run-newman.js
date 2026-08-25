@@ -124,14 +124,27 @@ function printSummaryAndExit() {
   let failedAssertionsAll = 0;
   let hasFailures = false;
 
+  // Determine GitHub Pages Base URL if in GitHub Actions
+  let pagesBaseUrl = null;
+  if (process.env.GITHUB_REPOSITORY) {
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    pagesBaseUrl = `https://${owner}.github.io/${repo}`;
+  }
+
   const markdownLines = [
-    '# 🧪 Newman API Test Automation Report',
+    '# 🧪 Newman API Test Automation Dashboard',
     '',
-    `**Execution Date**: ${new Date().toISOString()}`,
-    '',
-    '| Suite Name | Status | Requests (Total/Failed) | Assertions (Total/Failed) | HTML Report |',
-    '| :--- | :---: | :---: | :---: | :--- |'
+    `**Execution Date**: ${new Date().toUTCString()}`,
+    ''
   ];
+
+  if (pagesBaseUrl) {
+    markdownLines.push(`🌐 **Live HTML Reports Dashboard**: [View GitHub Pages Dashboard](${pagesBaseUrl})`);
+    markdownLines.push('');
+  }
+
+  markdownLines.push('| Suite Name | Status | Requests (Total/Failed) | Assertions (Total/Failed) | Interactive Report |');
+  markdownLines.push('| :--- | :---: | :---: | :---: | :--- |');
 
   results.forEach(res => {
     totalRequestsAll += res.totalRequests;
@@ -144,24 +157,191 @@ function printSummaryAndExit() {
     }
 
     const badge = res.status === 'PASSED' ? '✅ PASSED' : '❌ FAILED';
-    console.log(`${badge} | ${res.name.padEnd(22)} | Requests: ${res.totalRequests - res.failedRequests}/${res.totalRequests} | Assertions: ${res.totalAssertions - res.failedAssertions}/${res.totalAssertions}`);
+    const reportFilename = `${res.slug}-report.html`;
     
-    const reportFilename = path.basename(res.reportPath);
-    markdownLines.push(`| **${res.name}** | ${badge} | ${res.totalRequests} / ${res.failedRequests} | ${res.totalAssertions} / ${res.failedAssertions} | [View Report](./${reportFilename}) |`);
+    let reportLink = `[Download Artifacts / Local](./${reportFilename})`;
+    if (pagesBaseUrl) {
+      reportLink = `[🔗 Open Live Report](${pagesBaseUrl}/${reportFilename})`;
+    }
+
+    console.log(`${badge} | ${res.name.padEnd(22)} | Requests: ${res.totalRequests - res.failedRequests}/${res.totalRequests} | Assertions: ${res.totalAssertions - res.failedAssertions}/${res.totalAssertions}`);
+
+    markdownLines.push(`| **${res.name}** | ${badge} | ${res.totalRequests} / ${res.failedRequests} | ${res.totalAssertions} / ${res.failedAssertions} | ${reportLink} |`);
   });
 
   markdownLines.push('');
-  markdownLines.push(`### 📈 Total Overview`);
+  markdownLines.push(`### 📈 Total Execution Summary`);
   markdownLines.push(`- **Total Requests**: ${totalRequestsAll} (${failedRequestsAll} failed)`);
   markdownLines.push(`- **Total Assertions**: ${totalAssertionsAll} (${failedAssertionsAll} failed)`);
   markdownLines.push(`- **Final Status**: ${hasFailures ? '❌ FAILED' : '✅ PASSED'}`);
+  markdownLines.push('');
+  markdownLines.push(`> ℹ️ *Note: If opening HTML report links locally or via Artifacts, please download the `newman-api-test-reports` ZIP artifact or view via GitHub Pages.*`);
 
+  // Write summary markdown
   const summaryMarkdownPath = path.join(reportsDir, 'summary.md');
   fs.writeFileSync(summaryMarkdownPath, markdownLines.join('\n'), 'utf8');
 
+  // Build index.html Dashboard for GitHub Pages
+  const indexHtmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Testing Reports Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-pass: #22c55e;
+      --accent-fail: #ef4444;
+      --accent-blue: #3b82f6;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+      color: #ffffff;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .stat-card .label {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+    }
+    .suite-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .suite-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+    }
+    .suite-info h3 {
+      margin: 0 0 0.4rem 0;
+      font-size: 1.2rem;
+    }
+    .suite-metrics {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .badge {
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .badge-pass { background: rgba(34, 197, 94, 0.2); color: var(--accent-pass); }
+    .badge-fail { background: rgba(239, 68, 68, 0.2); color: var(--accent-fail); }
+    .btn {
+      background: var(--accent-blue);
+      color: #ffffff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧪 Newman API Test Automation Dashboard</h1>
+      <div class="meta">Execution Date: ${new Date().toUTCString()} | Status: <strong>${hasFailures ? '❌ FAILED' : '✅ PASSED'}</strong></div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Test Suites</div>
+        <div class="value">${suites.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Requests</div>
+        <div class="value">${totalRequestsAll}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Passed Assertions</div>
+        <div class="value" style="color: var(--accent-pass)">${totalAssertionsAll - failedAssertionsAll}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Failed Assertions</div>
+        <div class="value" style="color: ${failedAssertionsAll > 0 ? 'var(--accent-fail)' : 'var(--text-muted)'}">${failedAssertionsAll}</div>
+      </div>
+    </div>
+
+    <h2>API Test Suites</h2>
+    ${results.map(r => `
+      <div class="suite-card">
+        <div class="suite-info">
+          <h3>${r.name} <span class="badge ${r.status === 'PASSED' ? 'badge-pass' : 'badge-fail'}">${r.status}</span></h3>
+          <div class="suite-metrics">
+            Requests: ${r.totalRequests - r.failedRequests}/${r.totalRequests} | Assertions: ${r.totalAssertions - r.failedAssertions}/${r.totalAssertions}
+          </div>
+        </div>
+        <a class="btn" href="./${r.slug}-report.html" target="_blank">View Detailed Report &rarr;</a>
+      </div>
+    `).join('')}
+  </div>
+</body>
+</html>`;
+
+  fs.writeFileSync(path.join(reportsDir, 'index.html'), indexHtmlContent, 'utf8');
+
   console.log('==================================================');
   console.log(`📄 Combined Summary Markdown saved to: ${summaryMarkdownPath}`);
-  console.log(`📁 HTML Reports generated in: ${reportsDir}`);
+  console.log(`🌐 Index Dashboard generated in: ${path.join(reportsDir, 'index.html')}`);
   console.log('==================================================\n');
 
   if (process.env.GITHUB_STEP_SUMMARY) {
@@ -173,7 +353,6 @@ function printSummaryAndExit() {
     }
   }
 
-  // Note: if user wants process to fail on test failure, set exit code
   if (hasFailures) {
     console.log('⚠️ Some API test suites contained failures.');
     process.exit(1);
