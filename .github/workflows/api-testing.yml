@@ -19,17 +19,19 @@ jobs:
       - name: 📥 Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js Runtime (v20)
+      - name: 🟢 Setup Node.js Runtime (v22)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: 📦 Install Project Dependencies
         run: npm ci
 
       - name: 📁 Ensure Output Directory Exists
-        run: mkdir -p newman-reports
+        run: |
+          mkdir -p newman-reports
+          echo "# Test Execution Summary" > newman-reports/summary.md
 
       - name: 🚀 Run Newman API Tests
         id: run-tests

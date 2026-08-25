@@ -7,6 +7,18 @@ if (!fs.existsSync(reportsDir)) {
   fs.mkdirSync(reportsDir, { recursive: true });
 }
 
+// Write initial placeholder index.html & summary.md so directory is never empty
+const initialIndexHtml = `<!DOCTYPE html>
+<html>
+<head><title>API Testing Dashboard</title></head>
+<body style="font-family: sans-serif; background: #0f172a; color: white; padding: 2rem;">
+  <h1>🧪 Newman API Testing Dashboard</h1>
+  <p>Test suite execution is starting/in progress...</p>
+</body>
+</html>`;
+fs.writeFileSync(path.join(reportsDir, 'index.html'), initialIndexHtml, 'utf8');
+fs.writeFileSync(path.join(reportsDir, 'summary.md'), '# 🧪 Newman API Test Automation Dashboard\n\nExecution starting...\n', 'utf8');
+
 // Read optional .env if available
 try {
   require('dotenv').config();
@@ -18,29 +30,29 @@ const suites = [
   {
     name: 'ReqRes API',
     slug: 'reqres',
-    collection: path.join(__dirname, '../Postman JSON import files/ReqRes_API_Postman_Collection.json'),
-    environment: path.join(__dirname, '../Postman JSON import files/environments/reqres.env.json'),
+    collection: path.join(__dirname, '..', 'Postman JSON import files', 'ReqRes_API_Postman_Collection.json'),
+    environment: path.join(__dirname, '..', 'Postman JSON import files', 'environments', 'reqres.env.json'),
     envVars: process.env.REQRES_API_KEY ? [{ key: 'apiKey', value: process.env.REQRES_API_KEY }] : []
   },
   {
     name: 'Restful Booker API',
     slug: 'restful-booker',
-    collection: path.join(__dirname, '../Postman JSON import files/Restful_Booker_Postman_Collection.json'),
-    environment: path.join(__dirname, '../Postman JSON import files/environments/restful_booker.env.json'),
+    collection: path.join(__dirname, '..', 'Postman JSON import files', 'Restful_Booker_Postman_Collection.json'),
+    environment: path.join(__dirname, '..', 'Postman JSON import files', 'environments', 'restful_booker.env.json'),
     envVars: []
   },
   {
     name: 'Swagger Petstore API',
     slug: 'swagger-petstore',
-    collection: path.join(__dirname, '../Postman JSON import files/Swagger_Petstore_Postman_Collection.json'),
-    environment: path.join(__dirname, '../Postman JSON import files/environments/swagger_petstore.env.json'),
+    collection: path.join(__dirname, '..', 'Postman JSON import files', 'Swagger_Petstore_Postman_Collection.json'),
+    environment: path.join(__dirname, '..', 'Postman JSON import files', 'environments', 'swagger_petstore.env.json'),
     envVars: []
   },
   {
     name: 'Todoist API',
     slug: 'todoist',
-    collection: path.join(__dirname, '../Postman JSON import files/Todoist_API_Postman_Collection.json'),
-    environment: path.join(__dirname, '../Postman JSON import files/environments/todoist.env.json'),
+    collection: path.join(__dirname, '..', 'Postman JSON import files', 'Todoist_API_Postman_Collection.json'),
+    environment: path.join(__dirname, '..', 'Postman JSON import files', 'environments', 'todoist.env.json'),
     envVars: (process.env.TODOIST_BEARER_TOKEN || process.env.TODOIST_TOKEN) 
       ? [{ key: 'bearerToken', value: process.env.TODOIST_BEARER_TOKEN || process.env.TODOIST_TOKEN }] 
       : []
@@ -61,56 +73,99 @@ function runNextSuite() {
 
   console.log(`\n==================================================`);
   console.log(`🚀 Running Suite [${suiteIndex + 1}/${suites.length}]: ${suite.name}`);
+  console.log(`📁 Collection Path: ${suite.collection}`);
+  console.log(`📄 Environment Path: ${suite.environment}`);
   console.log(`==================================================`);
 
-  newman.run({
-    collection: suite.collection,
-    environment: suite.environment,
-    envVar: suite.envVars,
-    reporters: ['cli', 'htmlextra'],
-    reporter: {
-      htmlextra: {
-        export: reportPath,
-        darkTheme: true,
-        title: `${suite.name} - Test Report`,
-        logs: true
-      }
-    }
-  }, function (err, summary) {
-    if (err) {
-      console.error(`❌ Error executing suite ${suite.name}:`, err);
-      results.push({
-        name: suite.name,
-        slug: suite.slug,
-        status: 'FAILED',
-        totalRequests: 0,
-        failedRequests: 1,
-        totalAssertions: 0,
-        failedAssertions: 1,
-        reportPath: reportPath,
-        error: err.message
-      });
-    } else {
-      const stats = summary.run.stats;
-      const failedRequests = stats.requests.failed || 0;
-      const failedAssertions = stats.assertions.failed || 0;
-      const isPass = failedRequests === 0 && failedAssertions === 0;
-
-      results.push({
-        name: suite.name,
-        slug: suite.slug,
-        status: isPass ? 'PASSED' : 'FAILED',
-        totalRequests: stats.requests.total || 0,
-        failedRequests: failedRequests,
-        totalAssertions: stats.assertions.total || 0,
-        failedAssertions: failedAssertions,
-        reportPath: reportPath
-      });
-    }
-
+  if (!fs.existsSync(suite.collection)) {
+    console.error(`❌ Collection file NOT FOUND: ${suite.collection}`);
+    results.push({
+      name: suite.name,
+      slug: suite.slug,
+      status: 'FAILED',
+      totalRequests: 0,
+      failedRequests: 1,
+      totalAssertions: 0,
+      failedAssertions: 1,
+      reportPath: reportPath,
+      error: `Collection file not found at ${suite.collection}`
+    });
     suiteIndex++;
     runNextSuite();
-  });
+    return;
+  }
+
+  if (!fs.existsSync(suite.environment)) {
+    console.error(`⚠️ Environment file NOT FOUND: ${suite.environment}`);
+  }
+
+  try {
+    newman.run({
+      collection: suite.collection,
+      environment: fs.existsSync(suite.environment) ? suite.environment : undefined,
+      envVar: suite.envVars,
+      reporters: ['cli', 'htmlextra'],
+      reporter: {
+        htmlextra: {
+          export: reportPath,
+          darkTheme: true,
+          title: `${suite.name} - Test Report`,
+          logs: true
+        }
+      }
+    }, function (err, summary) {
+      if (err) {
+        console.error(`❌ Error executing suite ${suite.name}:`, err.message || err);
+        results.push({
+          name: suite.name,
+          slug: suite.slug,
+          status: 'FAILED',
+          totalRequests: 0,
+          failedRequests: 1,
+          totalAssertions: 0,
+          failedAssertions: 1,
+          reportPath: reportPath,
+          error: err.message || String(err)
+        });
+      } else {
+        const stats = summary.run ? summary.run.stats : { requests: {}, assertions: {} };
+        const failedRequests = (stats.requests && stats.requests.failed) || 0;
+        const failedAssertions = (stats.assertions && stats.assertions.failed) || 0;
+        const totalReqs = (stats.requests && stats.requests.total) || 0;
+        const totalAsserts = (stats.assertions && stats.assertions.total) || 0;
+        const isPass = failedRequests === 0 && failedAssertions === 0;
+
+        results.push({
+          name: suite.name,
+          slug: suite.slug,
+          status: isPass ? 'PASSED' : 'FAILED',
+          totalRequests: totalReqs,
+          failedRequests: failedRequests,
+          totalAssertions: totalAsserts,
+          failedAssertions: failedAssertions,
+          reportPath: reportPath
+        });
+      }
+
+      suiteIndex++;
+      runNextSuite();
+    });
+  } catch (runErr) {
+    console.error(`💥 Fatal Exception running suite ${suite.name}:`, runErr);
+    results.push({
+      name: suite.name,
+      slug: suite.slug,
+      status: 'FAILED',
+      totalRequests: 0,
+      failedRequests: 1,
+      totalAssertions: 0,
+      failedAssertions: 1,
+      reportPath: reportPath,
+      error: runErr.message
+    });
+    suiteIndex++;
+    runNextSuite();
+  }
 }
 
 function printSummaryAndExit() {
@@ -124,7 +179,6 @@ function printSummaryAndExit() {
   let failedAssertionsAll = 0;
   let hasFailures = false;
 
-  // Determine GitHub Pages Base URL if in GitHub Actions
   let pagesBaseUrl = null;
   if (process.env.GITHUB_REPOSITORY) {
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
@@ -175,7 +229,7 @@ function printSummaryAndExit() {
   markdownLines.push(`- **Total Assertions**: ${totalAssertionsAll} (${failedAssertionsAll} failed)`);
   markdownLines.push(`- **Final Status**: ${hasFailures ? '❌ FAILED' : '✅ PASSED'}`);
   markdownLines.push('');
-  markdownLines.push(`> ℹ️ *Note: If opening HTML report links locally or via Artifacts, please download the `newman-api-test-reports` ZIP artifact or view via GitHub Pages.*`);
+  markdownLines.push(`> ℹ️ *Note: Download the \`newman-api-test-reports\` ZIP artifact or view live via GitHub Pages.*`);
 
   // Write summary markdown
   const summaryMarkdownPath = path.join(reportsDir, 'summary.md');
