@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Testing Reports Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-pass: #22c55e;
+      --accent-fail: #ef4444;
+      --accent-blue: #3b82f6;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+      color: #ffffff;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .stat-card .label {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+    }
+    .suite-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .suite-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+    }
+    .suite-info h3 {
+      margin: 0 0 0.4rem 0;
+      font-size: 1.2rem;
+    }
+    .suite-metrics {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .badge {
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .badge-pass { background: rgba(34, 197, 94, 0.2); color: var(--accent-pass); }
+    .badge-fail { background: rgba(239, 68, 68, 0.2); color: var(--accent-fail); }
+    .btn {
+      background: var(--accent-blue);
+      color: #ffffff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧪 Newman API Test Automation Dashboard</h1>
+      <div class="meta">Execution Date: Tue, 25 Aug 2026 08:03:27 GMT | Status: <strong>❌ FAILED</strong></div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Test Suites</div>
+        <div class="value">4</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Requests</div>
+        <div class="value">140</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Passed Assertions</div>
+        <div class="value" style="color: var(--accent-pass)">157</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Failed Assertions</div>
+        <div class="value" style="color: var(--accent-fail)">33</div>
+      </div>
+    </div>
+
+    <h2>API Test Suites</h2>
+    
+      <div class="suite-card">
+        <div class="suite-info">
+          <h3>ReqRes API <span class="badge badge-fail">FAILED</span></h3>
+          <div class="suite-metrics">
+            Requests: 24/24 | Assertions: 40/41
+          </div>
+        </div>
+        <a class="btn" href="./reqres-report.html" target="_blank">View Detailed Report &rarr;</a>
+      </div>
+    
+      <div class="suite-card">
+        <div class="suite-info">
+          <h3>Restful Booker API <span class="badge badge-fail">FAILED</span></h3>
+          <div class="suite-metrics">
+            Requests: 38/38 | Assertions: 41/48
+          </div>
+        </div>
+        <a class="btn" href="./restful-booker-report.html" target="_blank">View Detailed Report &rarr;</a>
+      </div>
+    
+      <div class="suite-card">
+        <div class="suite-info">
+          <h3>Swagger Petstore API <span class="badge badge-fail">FAILED</span></h3>
+          <div class="suite-metrics">
+            Requests: 34/34 | Assertions: 40/46
+          </div>
+        </div>
+        <a class="btn" href="./swagger-petstore-report.html" target="_blank">View Detailed Report &rarr;</a>
+      </div>
+    
+      <div class="suite-card">
+        <div class="suite-info">
+          <h3>Todoist API <span class="badge badge-fail">FAILED</span></h3>
+          <div class="suite-metrics">
+            Requests: 44/44 | Assertions: 36/55
+          </div>
+        </div>
+        <a class="btn" href="./todoist-report.html" target="_blank">View Detailed Report &rarr;</a>
+      </div>
+    
+  </div>
+</body>
+</html>
