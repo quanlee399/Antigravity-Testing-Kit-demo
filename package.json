@@ -7,12 +7,19 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
-    "codegen": "playwright codegen"
+    "codegen": "playwright codegen",
+    "test:api": "node scripts/run-newman.js",
+    "test:api:todoist": "newman run \"Postman JSON import files/Todoist_API_Postman_Collection.json\" -e \"Postman JSON import files/environments/todoist.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/todoist-report.html",
+    "test:api:reqres": "newman run \"Postman JSON import files/ReqRes_API_Postman_Collection.json\" -e \"Postman JSON import files/environments/reqres.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/reqres-report.html",
+    "test:api:booker": "newman run \"Postman JSON import files/Restful_Booker_Postman_Collection.json\" -e \"Postman JSON import files/environments/restful_booker.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/booker-report.html",
+    "test:api:petstore": "newman run \"Postman JSON import files/Swagger_Petstore_Postman_Collection.json\" -e \"Postman JSON import files/environments/swagger_petstore.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/petstore-report.html"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@types/node": "^25.9.3",
     "dotenv": "^16.4.5",
+    "newman": "^6.1.3",
+    "newman-reporter-htmlextra": "^1.23.1",
     "typescript": "^5.4.5"
   }
 }

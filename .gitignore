@@ -112,3 +112,7 @@ CLAUDE.md
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Newman Reports
+newman-reports/
+

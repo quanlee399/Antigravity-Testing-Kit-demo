@@ -1,0 +1,58 @@
+name: API Automated Testing (Newman)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    name: Run Newman API Automation Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js Runtime (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Project Dependencies
+        run: npm ci
+
+      - name: 📁 Ensure Output Directory Exists
+        run: mkdir -p newman-reports
+
+      - name: 🚀 Run Newman API Tests
+        id: run-tests
+        run: npm run test:api
+        env:
+          TODOIST_BEARER_TOKEN: ${{ secrets.TODOIST_BEARER_TOKEN }}
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+        continue-on-error: true
+
+      - name: 📝 Publish GitHub Step Summary Report
+        if: always()
+        run: |
+          if [ -f newman-reports/summary.md ]; then
+            cat newman-reports/summary.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 📤 Upload HTML Reports to GitHub Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-api-test-reports
+          path: newman-reports/
+          retention-days: 30
+
+      - name: ❌ Fail Workflow if Test Suite Failed
+        if: steps.run-tests.outcome == 'failure'
+        run: |
+          echo "One or more Newman API test suites failed."
+          exit 1
