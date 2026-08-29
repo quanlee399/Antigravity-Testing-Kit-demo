@@ -1,0 +1,92 @@
+name: k6 Performance Testing CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Loại k6 performance test cần chạy'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+      target_api:
+        description: 'Bộ API mục tiêu cần test'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - reqres
+          - herokuapp
+          - petstore
+          - todoist
+
+permissions:
+  contents: read
+
+jobs:
+  k6-performance-test:
+    name: Run k6 Performance Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Setup k6 CLI Engine
+        uses: grafana/setup-k6-action@v1
+
+      - name: 📁 Ensure Output Directory Exists
+        run: |
+          mkdir -p k6/results
+
+      - name: ⚡ Execute k6 Performance Test
+        id: run-k6
+        run: |
+          TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+          TARGET_API="${{ github.event.inputs.target_api || 'all' }}"
+          echo "Executing k6 test script: k6/scripts/${TEST_TYPE}-test.js for target API: ${TARGET_API}"
+          
+          k6 run --out json=k6/results/results.json k6/scripts/${TEST_TYPE}-test.js
+        env:
+          TARGET_API: ${{ github.event.inputs.target_api || 'all' }}
+          TODOIST_BEARER_TOKEN: ${{ secrets.TODOIST_BEARER_TOKEN }}
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+        continue-on-error: true
+
+      - name: 📝 Generate k6 Execution Summary Report
+        if: always()
+        run: |
+          echo "## 📊 k6 Performance Test Summary Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Test Type** | \`${{ github.event.inputs.test_type || 'smoke' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Target API** | \`${{ github.event.inputs.target_api || 'all' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Execution Status** | \`${{ steps.run-k6.outcome }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Target APIs Tested:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌐 **ReqRes API** (\`https://reqres.in/api\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏨 **Restful Booker Herokuapp** (\`https://restful-booker.herokuapp.com\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐶 **Swagger Petstore API** (\`https://petstore.swagger.io/v2\`)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 **Todoist API** (\`https://api.todoist.com/rest/v2\`)" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📤 Upload k6 Test Results to GitHub Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-performance-reports
+          path: k6/results/
+          retention-days: 30
+
+      - name: ❌ Fail Workflow if Performance Test Failed
+        if: steps.run-k6.outcome == 'failure'
+        run: |
+          echo "k6 Performance Test Suite encountered threshold violations or execution failures."
+          exit 1

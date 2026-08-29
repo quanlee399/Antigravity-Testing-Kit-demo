@@ -12,7 +12,13 @@
     "test:api:todoist": "newman run \"Postman JSON import files/Todoist_API_Postman_Collection.json\" -e \"Postman JSON import files/environments/todoist.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/todoist-report.html",
     "test:api:reqres": "newman run \"Postman JSON import files/ReqRes_API_Postman_Collection.json\" -e \"Postman JSON import files/environments/reqres.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/reqres-report.html",
     "test:api:booker": "newman run \"Postman JSON import files/Restful_Booker_Postman_Collection.json\" -e \"Postman JSON import files/environments/restful_booker.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/booker-report.html",
-    "test:api:petstore": "newman run \"Postman JSON import files/Swagger_Petstore_Postman_Collection.json\" -e \"Postman JSON import files/environments/swagger_petstore.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/petstore-report.html"
+    "test:api:petstore": "newman run \"Postman JSON import files/Swagger_Petstore_Postman_Collection.json\" -e \"Postman JSON import files/environments/swagger_petstore.env.json\" -r cli,htmlextra --reporter-htmlextra-export newman-reports/petstore-report.html",
+    "test:k6:smoke": "k6 run k6/scripts/smoke-test.js",
+    "test:k6:load": "k6 run k6/scripts/load-test.js",
+    "test:k6:reqres": "k6 run k6/scenarios/reqres-api.js",
+    "test:k6:herokuapp": "k6 run k6/scenarios/herokuapp-api.js",
+    "test:k6:petstore": "k6 run k6/scenarios/petstore-api.js",
+    "test:k6:todoist": "k6 run k6/scenarios/todoist-api.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",

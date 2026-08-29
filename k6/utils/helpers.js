@@ -11,12 +11,33 @@ export function randomThinkTime(minSeconds = 1, maxSeconds = 3) {
 }
 
 /**
- * Extracts CSRF token from Perfex CRM HTML response
- * @param {string} html - HTML string of the authentication page
- * @returns {string|null} CSRF token value or null if not found
+ * Generates a random integer between min and max (inclusive)
  */
-export function extractCsrfToken(html) {
-  if (!html) return null;
-  const match = html.match(/name="csrf_token_name"\s+value="([^"]+)"/);
-  return match ? match[1] : null;
+export function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Generates a random alphanumeric string of given length
+ */
+export function getRandomString(length = 8) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * Generates traceable dynamic test data
+ */
+export function generateTraceableData(prefix = 'k6_test') {
+  const timestamp = Date.now();
+  const randomSuffix = getRandomString(5);
+  return {
+    name: `${prefix}_${timestamp}_${randomSuffix}`,
+    email: `${prefix}_${timestamp}@auto.test`,
+    id: timestamp + getRandomInt(100, 999),
+  };
 }

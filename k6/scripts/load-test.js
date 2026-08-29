@@ -1,25 +1,31 @@
-import { Rate, Trend, Counter } from 'k6/metrics';
 import { THRESHOLDS } from '../config/environments.js';
-import { fullUserJourney } from '../scenarios/crm-user-flows.js';
-
-export const errorRate = new Rate('errors');
-export const requestCounter = new Counter('total_requests');
-export const userJourneyDuration = new Trend('user_journey_duration');
+import { reqresScenario } from '../scenarios/reqres-api.js';
+import { herokuappScenario } from '../scenarios/herokuapp-api.js';
+import { petstoreScenario } from '../scenarios/petstore-api.js';
+import { todoistScenario } from '../scenarios/todoist-api.js';
 
 export const options = {
   stages: [
-    { duration: '20s', target: 5 },   // Ramp-up to 5 users
-    { duration: '40s', target: 5 },   // Steady state load
-    { duration: '10s', target: 0 },   // Ramp-down
+    { duration: '30s', target: 5 },   // Ramp-up to 5 VUs
+    { duration: '1m', target: 10 },   // Sustained load at 10 VUs
+    { duration: '30s', target: 0 },   // Ramp-down
   ],
   thresholds: THRESHOLDS.load,
 };
 
 export default function () {
-  const startTime = Date.now();
+  const targetApi = __ENV.TARGET_API || 'all';
 
-  fullUserJourney();
-
-  userJourneyDuration.add(Date.now() - startTime);
-  requestCounter.add(1);
+  if (targetApi === 'reqres' || targetApi === 'all') {
+    reqresScenario();
+  }
+  if (targetApi === 'herokuapp' || targetApi === 'all') {
+    herokuappScenario();
+  }
+  if (targetApi === 'petstore' || targetApi === 'all') {
+    petstoreScenario();
+  }
+  if (targetApi === 'todoist' || targetApi === 'all') {
+    todoistScenario();
+  }
 }
