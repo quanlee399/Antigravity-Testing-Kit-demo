@@ -4,7 +4,7 @@ export const ENV = {
   REQRES_BASE_URL: __ENV.REQRES_BASE_URL || 'https://reqres.in/api',
   HEROKUAPP_BASE_URL: __ENV.HEROKUAPP_BASE_URL || 'https://restful-booker.herokuapp.com',
   PETSTORE_BASE_URL: __ENV.PETSTORE_BASE_URL || 'https://petstore.swagger.io/v2',
-  TODOIST_BASE_URL: __ENV.TODOIST_BASE_URL || 'https://api.todoist.com/rest/v2',
+  TODOIST_BASE_URL: __ENV.TODOIST_BASE_URL || 'https://api.todoist.com/api/v1',
   TODOIST_BEARER_TOKEN: __ENV.TODOIST_BEARER_TOKEN || '',
 };
 
