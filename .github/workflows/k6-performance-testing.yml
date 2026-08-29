@@ -28,7 +28,7 @@ on:
           - todoist
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   k6-performance-test:
@@ -45,6 +45,7 @@ jobs:
       - name: 📁 Ensure Output Directory Exists
         run: |
           mkdir -p k6/results
+          echo "# k6 Execution Pending" > k6/results/summary.md
 
       - name: ⚡ Execute k6 Performance Test
         id: run-k6
@@ -57,7 +58,6 @@ jobs:
             -e TARGET_API="${TARGET_API}" \
             -e TODOIST_BEARER_TOKEN="${TODOIST_BEARER_TOKEN}" \
             -e REQRES_API_KEY="${REQRES_API_KEY}" \
-            --out json=k6/results/results.json \
             k6/scripts/${TEST_TYPE}-test.js
         env:
           TARGET_API: ${{ github.event.inputs.target_api || 'all' }}
@@ -65,24 +65,17 @@ jobs:
           REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
         continue-on-error: true
 
-      - name: 📝 Generate k6 Execution Summary Report
+      - name: 📝 Publish k6 Step Summary to GitHub Dashboard
         if: always()
         run: |
-          echo "## 📊 k6 Performance Test Summary Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Test Type** | \`${{ github.event.inputs.test_type || 'smoke' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Target API** | \`${{ github.event.inputs.target_api || 'all' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Execution Outcome** | \`${{ steps.run-k6.outcome }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📁 Target APIs Included in Suite:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🌐 **ReqRes API** (\`https://reqres.in/api\`)" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏨 **Restful Booker Herokuapp** (\`https://restful-booker.herokuapp.com\`)" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐶 **Swagger Petstore API** (\`https://petstore.swagger.io/v2\`)" >> $GITHUB_STEP_SUMMARY
-          echo "- 📝 **Todoist API** (\`https://api.todoist.com/rest/v2\`)" >> $GITHUB_STEP_SUMMARY
+          if [ -f k6/results/summary.md ]; then
+            cat k6/results/summary.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 📊 k6 Performance Test Run Completed" >> $GITHUB_STEP_SUMMARY
+            echo "Execution Outcome: \`${{ steps.run-k6.outcome }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
 
-      - name: 📤 Upload k6 Test Results to GitHub Artifacts
+      - name: 📤 Upload k6 HTML Dashboard & JSON Results to Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -93,6 +86,6 @@ jobs:
       - name: ❌ Check Workflow Result
         if: steps.run-k6.outcome == 'failure'
         run: |
-          echo "⚠️ k6 Performance Test completed with threshold warnings/failures."
-          echo "Please review the test summary and uploaded artifacts."
+          echo "⚠️ k6 Performance Test completed with threshold violations or request failures."
+          echo "Please review the Detailed Checks & Failure Diagnostics table above."
           exit 1
