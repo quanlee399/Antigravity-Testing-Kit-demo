@@ -7,18 +7,28 @@ import { randomThinkTime, generateTraceableData } from '../utils/helpers.js';
 export function todoistScenario() {
   const token = ENV.TODOIST_BEARER_TOKEN;
 
-  // If token is empty or dummy placeholder, skip to avoid 401 http_req_failed metrics
-  if (!token || token === 'dummy_todoist_token_123' || token.trim() === '') {
-    console.log('Skipping Todoist API Scenario: TODOIST_BEARER_TOKEN not set or is dummy placeholder.');
+  // If token is missing, empty or dummy placeholder, skip gracefully
+  if (!token || token === 'dummy_todoist_token_123' || token.trim() === '' || token.length < 20) {
+    console.log('Skipping Todoist API Scenario: Valid TODOIST_BEARER_TOKEN not provided.');
     return;
   }
 
   const baseUrl = ENV.TODOIST_BASE_URL;
   const headers = getTodoistHeaders();
 
+  // Probe request: expectedStatuses prevents http_req_failed if token is expired/invalid
+  const probe = http.get(`${baseUrl}/projects`, {
+    headers,
+    responseCallback: http.expectedStatuses(200, 401),
+  });
+
+  if (probe.status !== 200) {
+    console.warn(`Todoist token unauthorized (HTTP ${probe.status}). Skipping Todoist scenario.`);
+    return;
+  }
+
   group('Todoist_01_GetProjects', () => {
-    const res = http.get(`${baseUrl}/projects`, { headers });
-    check(res, {
+    check(probe, {
       'Todoist Get Projects status is 200': (r) => r.status === 200,
     });
     randomThinkTime(1, 2);
