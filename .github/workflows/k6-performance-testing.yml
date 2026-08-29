@@ -53,7 +53,12 @@ jobs:
           TARGET_API="${{ github.event.inputs.target_api || 'all' }}"
           echo "Executing k6 test script: k6/scripts/${TEST_TYPE}-test.js for target API: ${TARGET_API}"
           
-          k6 run --out json=k6/results/results.json k6/scripts/${TEST_TYPE}-test.js
+          k6 run \
+            -e TARGET_API="${TARGET_API}" \
+            -e TODOIST_BEARER_TOKEN="${TODOIST_BEARER_TOKEN}" \
+            -e REQRES_API_KEY="${REQRES_API_KEY}" \
+            --out json=k6/results/results.json \
+            k6/scripts/${TEST_TYPE}-test.js
         env:
           TARGET_API: ${{ github.event.inputs.target_api || 'all' }}
           TODOIST_BEARER_TOKEN: ${{ secrets.TODOIST_BEARER_TOKEN }}

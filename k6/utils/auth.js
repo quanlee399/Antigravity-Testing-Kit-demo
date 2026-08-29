@@ -32,9 +32,15 @@ export function getBookerToken(username = 'admin', password = 'password123') {
 
 /**
  * Returns authorization headers for Todoist API
+ * Automatically cleans up token formatting (strips duplicate Bearer prefix/whitespace)
  */
 export function getTodoistHeaders() {
+  let token = __ENV.TODOIST_BEARER_TOKEN || ENV.TODOIST_BEARER_TOKEN || '';
+  token = token.trim();
+  if (token.startsWith('Bearer ')) {
+    token = token.substring(7).trim();
+  }
   return Object.assign({}, DEFAULT_HEADERS, {
-    'Authorization': `Bearer ${ENV.TODOIST_BEARER_TOKEN}`,
+    'Authorization': `Bearer ${token}`,
   });
 }
