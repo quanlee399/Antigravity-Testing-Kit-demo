@@ -116,3 +116,7 @@ CLAUDE.md
 # Newman Reports
 newman-reports/
 
+# JMeter Performance Test Results
+jmeter/results/*
+!jmeter/results/.gitkeep
+
